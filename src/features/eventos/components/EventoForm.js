@@ -72,6 +72,7 @@ const EventoForm = () => {
         nome: form.nome,
         dataHora: dataHoraLocalString, // <-- Perfeito!
         endereco: form.endereco,
+        descricao: form.descricao, // <-- MUDANÇA 2: ADICIONADO AO PAYLOAD
         idOng: user.id,
       };
 
@@ -159,6 +160,26 @@ const EventoForm = () => {
           {/* --- FIM DO NOVO SELETOR --- */}
 
           {renderInput("endereco", "Endereço")}
+
+          {/* --- MUDANÇA 3: NOVO CAMPO DE DESCRIÇÃO --- */}
+        <div className="mb-3.5">
+          <label htmlFor="descricao" className="block text-black font-medium text-sm">
+            Descrição (Opcional):
+          </label>
+          <textarea
+            id="descricao"
+            name="descricao"
+            rows="4"
+            value={form.descricao}
+            onChange={handleForm}
+            placeholder="Digite os detalhes do evento..."
+            className={`w-full text-base py-3.5 px-3 rounded-md border-[1.5px] ${
+              errors.descricao ? "border-red-500" : "border-white/80"
+            } bg-white/95 text-black`}
+          />
+          {errors.descricao && <p className="text-red-600 text-xs mt-1">{errors.descricao}</p>}
+        </div>
+        {/* --- FIM DO NOVO CAMPO --- */}
 
           {errors.geral && (
             <p className="text-red-600 text-sm text-center mt-2">

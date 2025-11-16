@@ -1,35 +1,35 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-// [ALTERAÇÃO] Importa o store do Zustand em vez do Context
-import useAuthStore from '../store/AuthStore';
+
+// --- AQUI ESTÁ A CORREÇÃO ---
+// Importamos o UserStore, que é onde o 'tipo' (ADMIN, ONG) está salvo.
+import useUserStore from '../store/UserStore';
 
 /**
- * Este componente "porteiro" protege rotas de Admin.
- * Ele é feito para ser usado *DENTRO* de um <PrivateRoute>,
- * então já podemos assumir que o usuário está logado (tem token).
-*
- * Ele apenas verifica se o usuário logado tem o 'tipo' ADMIN.
- */
+ * Este componente "porteiro" protege rotas de Admin.
+ * Ele já assume que o usuário está logado (pois deve ser usado dentro de uma Rota Privada).
+ *
+ * Ele apenas verifica se o 'tipo' do usuário no useUserStore é 'ADMIN'.
+ */
 const AdminRoute = () => {
-  // [ALTERAÇÃO] Pega o usuário do store do Zustand
-  const user = useAuthStore((state) => state.user);
+  // Pegamos o 'tipo' diretamente do UserStore.
+  const tipo = useUserStore((state) => state.tipo);
 
-  // Sua linha de teste. Agora o 'user' abaixo será o do Zustand.
-  const isAdmin = true; // user && user.tipo === 'ADMIN';
+  // Verificamos se é Admin
+  const isAdmin = tipo === 'ADMIN';
 
-  // Se for admin, mostre a página de admin (o <Outlet />)
-  if (isAdmin) {
-    return <Outlet />; // Renderiza o <AdminUploadScreen />
-  }
+  // Se for admin, mostre a página de admin (o <Outlet />)
+  if (isAdmin) {
+    return <Outlet />; // Renderiza o <AdminUploadScreen />
+  }
 
-  // Se NÃO for admin, mande-o para a "home" dele.
-  // (Não mandamos para /login, pois ele JÁ está logado)
-  // [ALTERAÇÃO] Esta lógica agora usa o 'user' do Zustand
-  const homePath = user?.tipo === 'ONG' ? '/ong-home' : '/adotante-home';
-  
-  // O 'replace' impede que ele use o botão "voltar" do navegador
-  // Se o user for null por algum motivo, redireciona para a home pública
-  return <Navigate to={homePath || '/'} replace />;
+  // Se NÃO for admin, mande-o para a "home" dele.
+  // (Não mandamos para /login, pois ele JÁ está logado)
+  const homePath = tipo === 'ONG' ? '/ong-home' : '/adotante-home';
+
+  // O 'replace' impede que ele use o botão "voltar" do navegador
+  // Se o 'tipo' for null por algum motivo, redireciona para a home pública
+  return <Navigate to={homePath || '/'} replace />;
 };
 
 export default AdminRoute;

@@ -67,11 +67,14 @@ const EventoPage = () => {
           {evento.nome}
         </h1>
         
-        <p className="text-xl text-gray-600 mb-6">
-          {/* Você precisa adicionar um campo 'descricao' no seu back-end e no form */}
-          Descrição detalhada do evento {evento.nome}. Lorem ipsum dolor sit amet, 
-          consectetur adipiscing elit.
-        </p>
+        {/* --- MUDANÇA REALIZADA AQUI --- */}
+        {/* Exibe a descrição dinamicamente, mas só se ela existir */}
+        {evento.descricao && (
+          <p className="text-xl text-gray-600 mb-6">
+            {evento.descricao}
+          </p>
+        )}
+        {/* --- FIM DA MUDANÇA --- */}
 
         <div className="flex items-center text-gray-900 mb-4 p-4 bg-gray-100 rounded-lg">
           <FaCalendarAlt className="mr-3 text-2xl text-indigo-600" />

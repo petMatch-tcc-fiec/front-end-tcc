@@ -71,30 +71,31 @@ const PetForm = () => {
     }
 
     try {
-// 1. Cria o 'payload' DTO (sem as fotos)
-      const payloadDto = {
-        nome: form.nome,
-        idade: parseInt(form.idade, 10),
-        porte: form.porte,
-        especie: form.especie,
-        sexo: form.sexo,
-        raca: form.raca || "Não definida",
-        cor: form.cor || "Não informada",
-        observacoesAnimal: form.descricao,
-        ong: { id: user.id },
-  	    fichaMedicaAnimal: null
-      };
+// ✅ CÓDIGO NOVO (Correto)
 
-      // 2. Cria o FormData
-      const formData = new FormData();
-      formData.append("dto", new Blob([JSON.stringify(payloadDto)], {
-        type: "application/json"
-      }));
+      // 1. Cria o FormData vazio
+      const formData = new FormData();
 
-      // 3. Adiciona o ARQUIVO (que está no state 'imagemArquivo')
-      if (imagemArquivo) {
-        formData.append("file", imagemArquivo);
-      }
+      // 2. Adiciona cada campo individualmente (flat)
+      // Os nomes das chaves (ex: 'nome') devem ser IDÊNTICOS
+      // aos nomes dos campos no seu DTO 'AnimalRegisterDto'
+      formData.append("nome", form.nome);
+      formData.append("idade", parseInt(form.idade, 10));
+      formData.append("porte", form.porte);
+      formData.append("especie", form.especie); // <-- O campo que estava dando erro
+      formData.append("sexo", form.sexo);
+      formData.append("raca", form.raca || "Não definida");
+      formData.append("cor", form.cor || "Não informada");
+      formData.append("observacoesAnimal", form.descricao);
+      
+      // (Não precisamos enviar ong ou fichaMedica, o backend cuida disso)
+
+      // 3. Adiciona o ARQUIVO
+      if (imagemArquivo) {
+        formData.append("file", imagemArquivo);
+      }
+
+      // O resto do try-catch continua igual...
 
       console.log("Enviando FormData para criar pet...");
       await PetService.criarPet(formData); // 🐾 (Envia o FormData)

@@ -18,7 +18,7 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // --- NOVO: Menu mobile ---
   const menuRef = useRef(null);
   
-  const welcomeMessage = user?.nomeOng || user?.nomeAdotante || "Bem-vindo(a)";
+  const welcomeMessage = user?.nomeFantasiaOng || user?.nome || "Bem-vindo(a)";
 
   // --- Lógica para fechar o dropdown DO USUÁRIO ao clicar fora ---
   useEffect(() => {
