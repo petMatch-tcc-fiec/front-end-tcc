@@ -1,59 +1,62 @@
-import React, { useState } from 'react'; // <-- Importa o useState
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import PetService from '../services/PetService'; // 🐾 Ajuste o caminho (../)
+import PetService from '../services/PetService';
 import { useAuth } from '../../../shared/context/AuthContext';
 import {
   FaArrowLeft,
   FaPaw,
   FaRulerVertical,
   FaBirthdayCake,
-  FaFileAlt,
-  FaHeart // <-- Importa o ícone de coração
+  FaHeart,
+  FaBuilding,
+  FaCheckCircle // ✨ Ícone de confirmação
 } from 'react-icons/fa';
 
 const PetPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth(); // <-- Pega o usuário logado
-  const [pet, setPet] = React.useState(null); // 🐾
+  const { user } = useAuth();
+  const [pet, setPet] = useState(null);
 
-  // Estado para controlar o feedback do botão
   const [matchStatus, setMatchStatus] = useState({
     loading: false,
     error: null,
-    success: false
+    success: false,
+    alreadyMatched: false // ✨ Novo estado para saber se já deu match antes
   });
 
-  React.useEffect(() => {
-    // Busca o pet específico
-    PetService.getPetById(id).then(data => { // 🐾
-      setPet(data); // 🐾
+  useEffect(() => {
+    PetService.getPetById(id).then(data => {
+      setPet(data);
     }).catch(err => {
       console.error(err);
-      navigate('/adotar'); // 🐾 Se não encontrar, volta para a lista (Já estava correto)
+      navigate('/adotar');
     });
   }, [id, navigate]);
 
-  // ****** ⬇️ NOVA FUNÇÃO PARA DAR MATCH ⬇️ ******
   const handleMatch = async () => {
     if (!pet) return;
 
-    setMatchStatus({ loading: true, error: null, success: false });
+    setMatchStatus({ loading: true, error: null, success: false, alreadyMatched: false });
     try {
       await PetService.registrarInteresse(pet.id);
-      setMatchStatus({ loading: false, error: null, success: true });
+      setMatchStatus({ loading: false, error: null, success: true, alreadyMatched: false });
     } catch (err) {
-      // O backend já tem a lógica de duplicidade, vamos usá-la
-      const errorMsg = err.response?.data?.message || err.message || "Erro ao registrar. Tente mais tarde.";
+      const errorMsg = err.response?.data?.message || err.message || "Erro ao registrar.";
       
-      if (errorMsg.includes("Usuário já está na fila")) {
-        setMatchStatus({ loading: false, error: "Você já demonstrou interesse neste pet!", success: false });
+      // ✨ LÓGICA DE PROTEÇÃO: Se já estiver na fila, bloqueia o botão como se fosse sucesso
+      if (errorMsg.includes("Usuário já está na fila") || errorMsg.includes("já demonstrou interesse")) {
+        setMatchStatus({ 
+            loading: false, 
+            error: null, 
+            success: true, 
+            alreadyMatched: true // Marca que já existia
+        });
       } else {
-        setMatchStatus({ loading: false, error: errorMsg, success: false });
+        setMatchStatus({ loading: false, error: errorMsg, success: false, alreadyMatched: false });
       }
     }
   };
-  // ****** ⬆️ FIM DA NOVA FUNÇÃO ⬆️ ******
 
   if (!pet) {
     return (
@@ -63,86 +66,129 @@ const PetPage = () => {
     );
   }
 
-  // Verifica se o usuário é um adotante
   const isAdotante = user && user.tipo !== 'ONG';
+  const imagemCapa = (pet.fotosAnimais && pet.fotosAnimais.length > 0)
+    ? pet.fotosAnimais[0].url
+    : pet.imagemUrl || 'https://via.placeholder.com/800x600?text=Sem+Foto';
+
+  // Helper para o texto do botão
+  const getButtonText = () => {
+    if (matchStatus.loading) return "Enviando...";
+    if (matchStatus.alreadyMatched) return "Interesse Já Registrado"; // ✨ Texto específico
+    if (matchStatus.success) return "Interesse Enviado!";
+    return "Quero Adotar";
+  };
 
   return (
-    // Estilo da página de detalhes
-    <div className="p-10 max-w-4xl mx-auto bg-white shadow-xl rounded-xl mt-10">
+    <div className="p-6 max-w-5xl mx-auto mt-8">
       <button
-        onClick={() => navigate('/adotar')} // 🐾 Volta para a lista (era /pets)
-        className="mb-6 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors flex items-center gap-2"
+        onClick={() => navigate('/adotar')}
+        className="mb-6 px-5 py-2.5 bg-white text-gray-700 font-medium rounded-full shadow-sm hover:shadow-md hover:bg-gray-50 transition-all flex items-center gap-2 border border-gray-200"
       >
-        <FaArrowLeft />
-        Voltar para os Pets
+        <FaArrowLeft className="text-sm" />
+        Voltar para lista
       </button>
 
-      <div className="flex flex-col">
-        <img
-          src={pet.imagemUrl || 'https://via.placeholder.com/800x400?text=Pet'}
-          alt={pet.nome}
-          className="w-full h-64 object-cover rounded-lg shadow-md mb-6"
-        />
-
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          {pet.nome}
-        </h1>
-
-        {/* Descrição vinda do backend */}
-        <p className="text-xl text-gray-600 mb-6">
-          {pet.descricao || "Este pet ainda não tem uma descrição detalhada."}
-        </p>
-
-        {/* ****** ⬇️ NOVO BOTÃO DE MATCH AQUI ⬇️ ****** */}
-        {isAdotante && (
-          <div className="my-6">
-            <button
-              onClick={handleMatch}
-              disabled={matchStatus.loading || matchStatus.success || matchStatus.error}
-              className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-pink-500 to-red-500 text-white text-xl font-bold rounded-lg shadow-lg hover:from-pink-600 hover:to-red-600 transition-all duration-300 transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:scale-100"
-            >
-              <FaHeart />
-              {matchStatus.loading ? "Enviando..." : (matchStatus.success ? "Interesse Registrado!" : "Quero dar Match!")}
-            </button>
-            
-            {/* Feedback para o usuário */}
-            {matchStatus.error && (
-              <p className="text-red-600 text-center mt-3 font-medium">{matchStatus.error}</p>
-            )}
-            {matchStatus.success && (
-              <p className="text-green-600 text-center mt-3 font-medium">
-                Interesse registrado com sucesso! A ONG foi notificada e você pode acompanhar na sua página de "Meus Interesses".
-              </p>
-            )}
-          </div>
-        )}
-        {/* ****** ⬆️ FIM DO BOTÃO DE MATCH ⬆️ ****** */}
-
-
-        {/* Bloco de Informações */}
-        <div className="space-y-4">
-          <div className="flex items-center text-gray-900 p-4 bg-gray-100 rounded-lg">
-            <FaPaw className="mr-3 text-2xl text-indigo-600" />
-            <span className="text-xl font-medium">
-              Espécie: <span className="font-bold">{pet.especie}</span>
-            </span>
-          </div>
-
-          <div className="flex items-center text-gray-900 p-4 bg-gray-100 rounded-lg">
-            <FaRulerVertical className="mr-3 text-2xl text-indigo-600" />
-            <span className="text-xl font-medium">
-              Porte: <span className="font-bold">{pet.porte}</span>
-            </span>
-          </div>
-
-          <div className="flex items-center text-gray-900 p-4 bg-gray-100 rounded-lg">
-            <FaBirthdayCake className="mr-3 text-2xl text-indigo-600" />
-            <span className="text-xl font-medium">
-              Idade: <span className="font-bold">{pet.idade} {pet.idade === 1 ? 'ano' : 'anos'}</span>
-            </span>
-          </div>
+      <div className="bg-white shadow-xl rounded-3xl overflow-hidden">
+        
+        <div className="w-full h-96 bg-gray-100 relative">
+           <img src={imagemCapa} alt={pet.nome} className="w-full h-full object-cover" />
+           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+           <h1 className="absolute bottom-6 left-8 text-5xl font-bold text-white drop-shadow-md capitalize">
+             {pet.nome}
+           </h1>
         </div>
 
+        <div className="p-8 md:p-10">
+          
+          <div className="mb-8">
+             <h2 className="text-2xl font-bold text-gray-800 mb-3">Sobre mim</h2>
+             <p className="text-lg text-gray-600 leading-relaxed">
+               {pet.observacoesAnimal || "Este pet ainda não tem uma descrição detalhada, mas tem muito amor para dar!"}
+             </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+             
+             <div className="md:col-span-2 space-y-4">
+                <div className="flex items-center p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                  <div className="p-3 bg-blue-100 rounded-full mr-4">
+                    <FaBuilding className="text-xl text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-blue-600 font-semibold uppercase tracking-wide">ONG Responsável</p>
+                    <p className="text-xl font-bold text-blue-900">
+                      {pet.ong ? pet.ong.nomeFantasiaOng : "Não informada"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="p-4 bg-gray-50 rounded-xl flex flex-col items-center text-center border border-gray-100">
+                    <FaPaw className="text-3xl text-indigo-500 mb-2" />
+                    <span className="text-sm text-gray-500">Espécie</span>
+                    <span className="font-bold text-gray-800 text-lg">{pet.especie}</span>
+                  </div>
+
+                  <div className="p-4 bg-gray-50 rounded-xl flex flex-col items-center text-center border border-gray-100">
+                    <FaRulerVertical className="text-3xl text-purple-500 mb-2" />
+                    <span className="text-sm text-gray-500">Porte</span>
+                    <span className="font-bold text-gray-800 text-lg">{pet.porte}</span>
+                  </div>
+
+                  <div className="p-4 bg-gray-50 rounded-xl flex flex-col items-center text-center border border-gray-100">
+                    <FaBirthdayCake className="text-3xl text-pink-500 mb-2" />
+                    <span className="text-sm text-gray-500">Idade</span>
+                    <span className="font-bold text-gray-800 text-lg">{pet.idade} {pet.idade === 1 ? 'ano' : 'anos'}</span>
+                  </div>
+                </div>
+             </div>
+
+             <div className="md:col-span-1">
+               {isAdotante ? (
+                  <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 sticky top-6">
+                    <h3 className="text-lg font-bold text-gray-800 mb-4 text-center">Gostou do {pet.nome}?</h3>
+                    
+                    <button
+                      onClick={handleMatch}
+                      // ✨ Desabilita se estiver carregando OU se já tiver sucesso/matched
+                      disabled={matchStatus.loading || matchStatus.success} 
+                      className={`w-full flex items-center justify-center gap-2 py-4 text-lg font-bold rounded-xl shadow-lg transition-all transform disabled:opacity-80 disabled:cursor-not-allowed disabled:translate-y-0 ${
+                        matchStatus.success 
+                          ? "bg-green-500 text-white hover:bg-green-600" // Cor de sucesso/já registrado
+                          : "bg-gradient-to-r from-pink-500 to-red-500 text-white hover:from-pink-600 hover:to-red-600 hover:-translate-y-1"
+                      }`}
+                    >
+                      {matchStatus.success ? <FaCheckCircle /> : <FaHeart className={matchStatus.loading ? "animate-pulse" : ""} />}
+                      {getButtonText()}
+                    </button>
+                    
+                    {matchStatus.error && (
+                      <p className="text-red-500 text-sm text-center mt-3 bg-red-50 p-2 rounded-lg border border-red-100">
+                        {matchStatus.error}
+                      </p>
+                    )}
+                    
+                    {/* ✨ Mensagem amigável se já estava registrado */}
+                    {matchStatus.alreadyMatched && (
+                       <p className="text-green-700 text-sm text-center mt-3 bg-green-100 p-2 rounded-lg border border-green-200">
+                         Você já está na fila de espera deste pet! A ONG entrará em contato.
+                       </p>
+                    )}
+                    {matchStatus.success && !matchStatus.alreadyMatched && (
+                      <p className="text-green-600 text-sm text-center mt-3 bg-green-50 p-2 rounded-lg border border-green-100">
+                        Interesse enviado com sucesso!
+                      </p>
+                    )}
+                  </div>
+               ) : (
+                 <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 text-center">
+                   <p className="text-gray-500 text-sm">Faça login como adotante para registrar interesse.</p>
+                 </div>
+               )}
+             </div>
+          </div>
+        </div>
       </div>
     </div>
   );
