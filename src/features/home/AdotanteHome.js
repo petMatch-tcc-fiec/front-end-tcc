@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaHeart, FaSearch, FaHome } from 'react-icons/fa';
+import { FaHeart, FaSearch, FaUserEdit } from 'react-icons/fa';
 
 const AdotanteHome = () => {
   return (
@@ -26,6 +26,7 @@ const AdotanteHome = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 
+          {/* 1. Buscar Pets */}
           <Link
             to="/adotar"
             className="block p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 border border-gray-100 flex flex-col items-center text-center group"
@@ -37,26 +38,28 @@ const AdotanteHome = () => {
             <p className="text-gray-600 text-sm">Navegue por todos os animais disponíveis para adoção.</p>
           </Link>
 
+          {/* 2. Meus Interesses (Editado conforme solicitado) */}
           <Link
-            to="/adotante/favoritos"
+            to="/meus-interesses"
             className="block p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 border border-gray-100 flex flex-col items-center text-center group"
           >
             <FaHeart className="text-5xl text-red-500 mb-3 group-hover:text-red-700" />
             <h2 className="text-xl font-bold text-gray-800 group-hover:text-black mb-1">
-              Meus Favoritos
+              Meus Interesses
             </h2>
-            <p className="text-gray-600 text-sm">Visualize os pets que você marcou para adoção.</p>
+            <p className="text-gray-600 text-sm">Visualize seus pedidos e acompanhe o status (Aprovado/Pendente).</p>
           </Link>
 
+          {/* 3. Meu Perfil (Ajustado rota para /editar-perfil que existe no App.js) */}
           <Link
-            to="/adotante/perfil"
+            to="/editar-perfil"
             className="block p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 border border-gray-100 flex flex-col items-center text-center group"
           >
-            <FaHome className="text-5xl text-green-500 mb-3 group-hover:text-green-700" />
+            <FaUserEdit className="text-5xl text-green-500 mb-3 group-hover:text-green-700" />
             <h2 className="text-xl font-bold text-gray-800 group-hover:text-black mb-1">
-              Minhas Adoções
+              Meu Perfil
             </h2>
-            <p className="text-gray-600 text-sm">Acompanhe o status dos seus pedidos de adoção.</p>
+            <p className="text-gray-600 text-sm">Atualize seus dados cadastrais e senha.</p>
           </Link>
 
         </div>

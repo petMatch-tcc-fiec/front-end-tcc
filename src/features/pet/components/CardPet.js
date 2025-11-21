@@ -1,20 +1,42 @@
 import React, { useState } from 'react';
 import { Link } from "react-router-dom";
-import { FaTrash, FaPaw, FaRulerVertical, FaBirthdayCake, FaHeart, FaArrowRight } from 'react-icons/fa';
+import { FaTrash, FaPaw, FaRulerVertical, FaBirthdayCake, FaHeart, FaArrowRight, FaCheck } from 'react-icons/fa';
 import { useAuth } from '../../../shared/context/AuthContext';
-import PetService from '../services/PetService'; // <-- Importa PetService]
+import PetService from '../services/PetService';
 
 const IMAGEM_PADRAO = "https://i.imgur.com/7b71Ymw.png"; 
 
 const CardPet = ({ pet, onDeletar, showControls }) => {
   const { user } = useAuth();
   const isAdotante = user && user.tipo !== 'ONG';
+  const isOng = user && user.tipo === 'ONG';
+
   const [isMatched, setIsMatched] = useState(false);
+  // Estado local para atualizar a tela instantaneamente sem recarregar
+  const [statusAtual, setStatusAtual] = useState(pet.status || "DISPONIVEL");
 
   const fotos = pet.fotosAnimais;
   const imageUrl = (fotos && fotos.length > 0 && fotos[0].url) 
     ? fotos[0].url 
     : pet.imagemUrl || IMAGEM_PADRAO;
+
+  // --- LÓGICA DO STATUS ADOTADO (NOVA) ---
+  const handleMarcarAdotado = async (e) => {
+    e.preventDefault(); 
+    e.stopPropagation();
+    
+    if (window.confirm(`Confirmar que ${pet.nome} foi adotado?`)) {
+      try {
+        // Chama o serviço que acabamos de criar
+        await PetService.atualizarStatus(pet.id, "ADOTADO");
+        setStatusAtual("ADOTADO"); // Atualiza o visual na hora
+      } catch (err) {
+        console.error(err);
+        alert("Erro ao atualizar status. Verifique se o backend já implementou a rota.");
+      }
+    }
+  };
+  // ---------------------------------------
 
   const handleDeleteClick = (e) => {
     e.preventDefault();
@@ -41,14 +63,19 @@ const CardPet = ({ pet, onDeletar, showControls }) => {
     }
   };
 
+  // Se for Adotante e o animal já estiver adotado, não mostramos o card
+  // (O backend já deve filtrar, mas isso é uma segurança visual extra)
+  if (isAdotante && statusAtual === 'ADOTADO') {
+    return null;
+  }
+
   return (
     <Link 
       to={`/adotar/${pet.id}`} 
-      // 📏 TAMANHO MANTIDO: Card compacto (380x420)
-      className="group w-full max-w-[380px] h-[420px] bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col mx-auto relative border border-gray-100"
+      // Adiciona estilo visual (opacidade e borda verde) se estiver ADOTADO
+      className={`group w-full max-w-[380px] h-[420px] bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col mx-auto relative border ${statusAtual === 'ADOTADO' ? 'border-green-400 opacity-80' : 'border-gray-100'}`}
     >
       
-      {/* 🖼️ IMAGEM AUMENTADA: Voltei para h-64 (256px) para dar destaque total à foto */}
       <div className="relative h-64 w-full overflow-hidden bg-gray-100">
         <img 
           src={imageUrl} 
@@ -58,16 +85,38 @@ const CardPet = ({ pet, onDeletar, showControls }) => {
         
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
+        {/* ✨ TARJA VISUAL DE "ADOTADO" */}
+        {statusAtual === 'ADOTADO' && (
+           <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
+             <span className="text-white font-bold text-2xl border-2 border-white px-4 py-1 rounded -rotate-12 shadow-lg">
+               JÁ ADOTADO
+             </span>
+           </div>
+        )}
+
         {/* BOTÕES DE AÇÃO */}
-        <div className="absolute top-3 right-3 flex flex-col gap-2">
+        <div className="absolute top-3 right-3 flex flex-col gap-2 z-20">
           {showControls && (
-            <button
-              onClick={handleDeleteClick}
-              className="p-2 bg-white/90 text-red-600 rounded-full hover:bg-red-600 hover:text-white shadow-md transition-all transform hover:scale-110 backdrop-blur-sm"
-              title="Excluir Pet"
-            >
-              <FaTrash size={14} />
-            </button>
+            <>
+              <button
+                onClick={handleDeleteClick}
+                className="p-2 bg-white/90 text-red-600 rounded-full hover:bg-red-600 hover:text-white shadow-md transition-all transform hover:scale-110 backdrop-blur-sm"
+                title="Excluir Pet"
+              >
+                <FaTrash size={14} />
+              </button>
+
+              {/* ✨ BOTÃO DE ADOTAR (APARECE SÓ PARA A ONG SE ESTIVER DISPONÍVEL) */}
+              {statusAtual !== 'ADOTADO' && (
+                <button
+                  onClick={handleMarcarAdotado}
+                  className="p-2 bg-white/90 text-green-600 rounded-full hover:bg-green-600 hover:text-white shadow-md transition-all transform hover:scale-110 backdrop-blur-sm"
+                  title="Marcar como Adotado"
+                >
+                  <FaCheck size={14} />
+                </button>
+              )}
+            </>
           )}
 
           {isAdotante && (
@@ -87,7 +136,6 @@ const CardPet = ({ pet, onDeletar, showControls }) => {
         </div>
       </div>
 
-      {/* 📝 CONTEÚDO COMPACTO: Ajustei padding e margens para caber no espaço restante */}
       <div className="p-3 flex flex-col flex-grow">
         
         <div className="mb-1.5">
@@ -113,8 +161,8 @@ const CardPet = ({ pet, onDeletar, showControls }) => {
 
         <div className="flex-grow"></div>
 
-        <div className="mt-auto w-full py-2 bg-gray-50 rounded-lg text-indigo-600 font-bold text-sm text-center group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300 flex items-center justify-center gap-2">
-           Ver Detalhes <FaArrowRight size={12} />
+        <div className="mt-auto w-full py-2 bg-yellow-50 rounded-lg text-yellow-600 font-bold text-sm text-center group-hover:bg-amber-500 group-hover:text-white transition-colors duration-300 flex items-center justify-center gap-2">
+            {statusAtual === 'ADOTADO' ? "Ver Detalhes" : <>Ver Detalhes <FaArrowRight size={12} /></>}
         </div>
 
       </div>

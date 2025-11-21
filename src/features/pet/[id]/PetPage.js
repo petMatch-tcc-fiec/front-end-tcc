@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import PetService from '../services/PetService';
 import { useAuth } from '../../../shared/context/AuthContext';
+// ✨ IMPORTAÇÃO GARANTIDA
 import {
   FaArrowLeft,
   FaPaw,
@@ -9,7 +10,7 @@ import {
   FaBirthdayCake,
   FaHeart,
   FaBuilding,
-  FaCheckCircle // ✨ Ícone de confirmação
+  FaCheckCircle
 } from 'react-icons/fa';
 
 const PetPage = () => {
@@ -22,7 +23,7 @@ const PetPage = () => {
     loading: false,
     error: null,
     success: false,
-    alreadyMatched: false // ✨ Novo estado para saber se já deu match antes
+    alreadyMatched: false 
   });
 
   useEffect(() => {
@@ -44,13 +45,12 @@ const PetPage = () => {
     } catch (err) {
       const errorMsg = err.response?.data?.message || err.message || "Erro ao registrar.";
       
-      // ✨ LÓGICA DE PROTEÇÃO: Se já estiver na fila, bloqueia o botão como se fosse sucesso
       if (errorMsg.includes("Usuário já está na fila") || errorMsg.includes("já demonstrou interesse")) {
         setMatchStatus({ 
             loading: false, 
             error: null, 
             success: true, 
-            alreadyMatched: true // Marca que já existia
+            alreadyMatched: true
         });
       } else {
         setMatchStatus({ loading: false, error: errorMsg, success: false, alreadyMatched: false });
@@ -71,13 +71,16 @@ const PetPage = () => {
     ? pet.fotosAnimais[0].url
     : pet.imagemUrl || 'https://via.placeholder.com/800x600?text=Sem+Foto';
 
-  // Helper para o texto do botão
   const getButtonText = () => {
     if (matchStatus.loading) return "Enviando...";
-    if (matchStatus.alreadyMatched) return "Interesse Já Registrado"; // ✨ Texto específico
+    if (matchStatus.alreadyMatched) return "Interesse Já Registrado";
     if (matchStatus.success) return "Interesse Enviado!";
     return "Quero Adotar";
   };
+
+  // ✨ PROTEÇÃO DO ÍCONE
+  // Se FaCheckCircle estiver undefined por algum motivo bizarro, usa null
+  const SuccessIcon = FaCheckCircle || (() => <span>(OK)</span>);
 
   return (
     <div className="p-6 max-w-5xl mx-auto mt-8">
@@ -151,15 +154,15 @@ const PetPage = () => {
                     
                     <button
                       onClick={handleMatch}
-                      // ✨ Desabilita se estiver carregando OU se já tiver sucesso/matched
                       disabled={matchStatus.loading || matchStatus.success} 
                       className={`w-full flex items-center justify-center gap-2 py-4 text-lg font-bold rounded-xl shadow-lg transition-all transform disabled:opacity-80 disabled:cursor-not-allowed disabled:translate-y-0 ${
                         matchStatus.success 
-                          ? "bg-green-500 text-white hover:bg-green-600" // Cor de sucesso/já registrado
+                          ? "bg-green-500 text-white hover:bg-green-600" 
                           : "bg-gradient-to-r from-pink-500 to-red-500 text-white hover:from-pink-600 hover:to-red-600 hover:-translate-y-1"
                       }`}
                     >
-                      {matchStatus.success ? <FaCheckCircle /> : <FaHeart className={matchStatus.loading ? "animate-pulse" : ""} />}
+                      {/* Aqui é onde estava quebrando se o ícone não existisse */}
+                      {matchStatus.success ? <SuccessIcon /> : <FaHeart className={matchStatus.loading ? "animate-pulse" : ""} />}
                       {getButtonText()}
                     </button>
                     
@@ -169,7 +172,6 @@ const PetPage = () => {
                       </p>
                     )}
                     
-                    {/* ✨ Mensagem amigável se já estava registrado */}
                     {matchStatus.alreadyMatched && (
                        <p className="text-green-700 text-sm text-center mt-3 bg-green-100 p-2 rounded-lg border border-green-200">
                          Você já está na fila de espera deste pet! A ONG entrará em contato.

@@ -31,6 +31,7 @@ import EditarPerfilPage from './features/splash/components/EditarPerfilPage.js';
 
 import './index.css';
 import AdminRoute from './shared/components/AdminRoute';
+import MeusInteressesPage from './features/pet/adocao/MeusInteressesPage.js';
 
 function App() {
   const [token, setToken] = React.useState(null);
@@ -59,7 +60,7 @@ function App() {
               {/* GRUPO 1: ROTAS PÚBLICAS GERAIS */}
               <Route element={<MainLayout />}>
                 <Route path="/" element={<Home />} />
-                <Route path="/novidades" element={<NovidadesScreen />} />
+                <Route path="/novidades" element={<SplashScreen><NovidadesScreen /></SplashScreen>} />
               </Route>
 
               {/* GRUPO 2: ROTAS DE "CONVIDADO" (Apenas para deslogados) */}
@@ -76,8 +77,12 @@ function App() {
               <Route element={<PrivateRoute />}>
                 <Route element={<MainLayout />}>
                   <Route path="/ong-home" element={<SplashScreen><OngHome /></SplashScreen>} />
+                  <Route path="/ong/fila-adocao" element={<SplashScreen><FilaAdocaoPage /></SplashScreen>} />                  
+                                    
                   <Route path="/adotante-home" element={<SplashScreen><AdotanteHome /></SplashScreen>} />
                   <Route path="/editar-perfil" element={<EditarPerfilPage />} />
+                  {/* ✨ 2. Nova Rota para Meus Interesses */}
+                  <Route path="/meus-interesses" element={<SplashScreen><MeusInteressesPage /></SplashScreen>} />
 
                   {/* === 👇 ROTAS DE EVENTOS ATUALIZADAS 👇 === */}
 
