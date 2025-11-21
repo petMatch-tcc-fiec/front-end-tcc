@@ -2,17 +2,15 @@ import React, { useState } from 'react';
 import { Link } from "react-router-dom";
 import { FaTrash, FaPaw, FaRulerVertical, FaBirthdayCake, FaHeart, FaArrowRight, FaCheck } from 'react-icons/fa';
 import { useAuth } from '../../../shared/context/AuthContext';
-import PetService from '../services/PetService';
+import PetService from '../services/PetService'; 
 
 const IMAGEM_PADRAO = "https://i.imgur.com/7b71Ymw.png"; 
 
 const CardPet = ({ pet, onDeletar, showControls }) => {
-  const { user } = useAuth();
+  const { user } = useAuth(); 
   const isAdotante = user && user.tipo !== 'ONG';
-  const isOng = user && user.tipo === 'ONG';
 
   const [isMatched, setIsMatched] = useState(false);
-  // Estado local para atualizar a tela instantaneamente sem recarregar
   const [statusAtual, setStatusAtual] = useState(pet.status || "DISPONIVEL");
 
   const fotos = pet.fotosAnimais;
@@ -20,153 +18,145 @@ const CardPet = ({ pet, onDeletar, showControls }) => {
     ? fotos[0].url 
     : pet.imagemUrl || IMAGEM_PADRAO;
 
-  // --- LÓGICA DO STATUS ADOTADO (NOVA) ---
+  // --- AÇÕES ---
   const handleMarcarAdotado = async (e) => {
-    e.preventDefault(); 
-    e.stopPropagation();
-    
+    e.preventDefault(); e.stopPropagation();
     if (window.confirm(`Confirmar que ${pet.nome} foi adotado?`)) {
       try {
-        // Chama o serviço que acabamos de criar
         await PetService.atualizarStatus(pet.id, "ADOTADO");
-        setStatusAtual("ADOTADO"); // Atualiza o visual na hora
+        setStatusAtual("ADOTADO");
       } catch (err) {
         console.error(err);
-        alert("Erro ao atualizar status. Verifique se o backend já implementou a rota.");
+        alert("Erro ao atualizar status.");
       }
     }
   };
-  // ---------------------------------------
 
   const handleDeleteClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation(); 
+    e.preventDefault(); e.stopPropagation(); 
     onDeletar(pet.id);
   };
 
   const handleMatchClick = async (e) => {
-    e.preventDefault();
-    e.stopPropagation(); 
-
+    e.preventDefault(); e.stopPropagation(); 
     if (isMatched) return;
-
     try {
       await PetService.registrarInteresse(pet.id);
       setIsMatched(true);
     } catch (err) {
-      const errorMsg = err.response?.data?.message || "Erro ao registrar.";
-      if (errorMsg.includes("Usuário já está na fila") || errorMsg.includes("já demonstrou interesse")) {
-        setIsMatched(true); 
-      } else {
-        console.error(errorMsg);
-      }
+      setIsMatched(true); 
     }
   };
 
-  // Se for Adotante e o animal já estiver adotado, não mostramos o card
-  // (O backend já deve filtrar, mas isso é uma segurança visual extra)
-  if (isAdotante && statusAtual === 'ADOTADO') {
-    return null;
-  }
+  if (isAdotante && statusAtual === 'ADOTADO') return null;
 
   return (
-    <Link 
-      to={`/adotar/${pet.id}`} 
-      // Adiciona estilo visual (opacidade e borda verde) se estiver ADOTADO
-      className={`group w-full max-w-[380px] h-[420px] bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col mx-auto relative border ${statusAtual === 'ADOTADO' ? 'border-green-400 opacity-80' : 'border-gray-100'}`}
-    >
+    <div className="relative h-full group">
       
-      <div className="relative h-64 w-full overflow-hidden bg-gray-100">
-        <img 
-          src={imageUrl} 
-          alt={pet.nome} 
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-        />
-        
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      {/* --- BOTÃO DE LIXEIRA --- */}
+      {showControls && (
+        <button
+          onClick={handleDeleteClick}
+          className="absolute top-2 right-2 z-50 p-2 bg-red-600 text-white rounded-full shadow-md hover:bg-red-700 hover:scale-105 transition-all duration-200 border-2 border-white"
+          title="Excluir Pet"
+        >
+          <FaTrash size={12} />
+        </button>
+      )}
 
-        {/* ✨ TARJA VISUAL DE "ADOTADO" */}
-        {statusAtual === 'ADOTADO' && (
-           <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
-             <span className="text-white font-bold text-2xl border-2 border-white px-4 py-1 rounded -rotate-12 shadow-lg">
-               JÁ ADOTADO
+      <Link 
+        to={`/adotar/${pet.id}`} 
+        className={`block h-full bg-white rounded-xl no-underline shadow-sm hover:shadow-lg border border-gray-100 overflow-hidden transition-all duration-300 transform hover:-translate-y-1 flex flex-col ${statusAtual === 'ADOTADO' ? 'opacity-80 grayscale-[0.5]' : ''}`}
+      >
+        
+        {/* Faixa decorativa */}
+        <div className="h-2 bg-gradient-to-r from-yellow-400 to-orange-400 w-full shrink-0" />
+
+        {/* Imagem (Altura Reduzida para h-48) */}
+        <div className="relative h-48 w-full overflow-hidden bg-gray-100 shrink-0">
+          <img 
+            src={imageUrl} 
+            alt={pet.nome} 
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+          />
+          
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60" />
+
+          {/* Tarja Adotado */}
+          {statusAtual === 'ADOTADO' && (
+             <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
+               <span className="text-white font-bold text-lg border-2 border-white px-3 py-1 rounded -rotate-12 shadow-lg">
+                 JÁ ADOTADO
+               </span>
+             </div>
+          )}
+
+          {/* Botões Internos */}
+          <div className="absolute bottom-2 right-2 flex gap-2 z-20">
+            {showControls && statusAtual !== 'ADOTADO' && (
+               <button
+                 onClick={handleMarcarAdotado}
+                 className="p-1.5 bg-white text-green-600 rounded-full hover:bg-green-500 hover:text-white shadow-sm transition-all"
+                 title="Marcar como Adotado"
+               >
+                 <FaCheck size={12} />
+               </button>
+            )}
+            
+            {/* --- BOTÃO DE MATCH VOLTOU PARA BRANCO --- */}
+            {isAdotante && (
+               <button
+                 onClick={handleMatchClick}
+                 disabled={isMatched}
+                 className={`p-2 rounded-full shadow-md transition-all transform hover:scale-110 flex items-center justify-center ${
+                    isMatched 
+                    ? "bg-green-500 text-white"
+                    : "bg-white text-yellow-500 hover:bg-yellow-500 hover:text-yellow" // fundo branco
+                 }`}
+                 title={isMatched ? "Interesse Registrado" : "Tenho Interesse"}
+               >
+                 <FaHeart size={14} />
+               </button>
+            )}
+          </div>
+        </div>
+
+        {/* Conteúdo (Padding Reduzido para p-4) */}
+        <div className="p-4 flex flex-col flex-1">
+          <div className="flex justify-between items-start mb-1">
+            <h3 className="text-lg font-bold text-gray-800 truncate capitalize leading-tight pr-2">
+              {pet.nome}
+            </h3>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded uppercase tracking-wide shrink-0">
+               {pet.especie}
+            </span>
+          </div>
+
+          {/* Tags (Margin Reduzida para mb-3) */}
+          <div className="flex flex-wrap gap-1.5 mb-3">
+             <span className="flex items-center text-[11px] font-medium text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">
+                <FaPaw className="mr-1 text-yellow-500" /> {pet.raca || 'SRD'}
              </span>
-           </div>
-        )}
+             <span className="flex items-center text-[11px] font-medium text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">
+                <FaRulerVertical className="mr-1 text-yellow-500" /> {pet.porte}
+             </span>
+             <span className="flex items-center text-[11px] font-medium text-gray-500 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">
+                <FaBirthdayCake className="mr-1 text-yellow-500" /> {pet.idade}a
+             </span>
+          </div>
 
-        {/* BOTÕES DE AÇÃO */}
-        <div className="absolute top-3 right-3 flex flex-col gap-2 z-20">
-          {showControls && (
-            <>
-              <button
-                onClick={handleDeleteClick}
-                className="p-2 bg-white/90 text-red-600 rounded-full hover:bg-red-600 hover:text-white shadow-md transition-all transform hover:scale-110 backdrop-blur-sm"
-                title="Excluir Pet"
-              >
-                <FaTrash size={14} />
-              </button>
+          {/* Empurra o rodapé para baixo */}
+          <div className="flex-grow"></div>
 
-              {/* ✨ BOTÃO DE ADOTAR (APARECE SÓ PARA A ONG SE ESTIVER DISPONÍVEL) */}
-              {statusAtual !== 'ADOTADO' && (
-                <button
-                  onClick={handleMarcarAdotado}
-                  className="p-2 bg-white/90 text-green-600 rounded-full hover:bg-green-600 hover:text-white shadow-md transition-all transform hover:scale-110 backdrop-blur-sm"
-                  title="Marcar como Adotado"
-                >
-                  <FaCheck size={14} />
-                </button>
-              )}
-            </>
-          )}
-
-          {isAdotante && (
-            <button
-              onClick={handleMatchClick}
-              disabled={isMatched}
-              className={`p-2 rounded-full shadow-md transition-all transform hover:scale-110 backdrop-blur-sm ${
-                isMatched 
-                  ? "bg-red-500 text-white cursor-not-allowed" 
-                  : "bg-white/90 text-red-500 hover:bg-red-500 hover:text-white"
-              }`}
-              title={isMatched ? "Interesse Registrado" : "Dar Match"}
-            >
-              <FaHeart size={16} />
-            </button>
-          )}
+          {/* Rodapé Compacto */}
+          <div className="mt-2 pt-2 border-t border-gray-50 flex justify-end">
+             <span className="text-[11px] font-bold text-yellow-600 uppercase tracking-wider flex items-center gap-1 group-hover:gap-2 transition-all">
+               {statusAtual === 'ADOTADO' ? "Ver ficha" : "Conhecer"} <FaArrowRight size={9} />
+             </span>
+          </div>
         </div>
-      </div>
-
-      <div className="p-3 flex flex-col flex-grow">
-        
-        <div className="mb-1.5">
-          <h3 className="text-xl font-bold text-gray-800 truncate capitalize leading-tight mb-0.5">
-            {pet.nome}
-          </h3>
-          <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">
-            {pet.especie}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap gap-1.5 mb-2">
-          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium bg-blue-50 text-blue-700 border border-blue-100">
-             <FaPaw className="mr-1" /> {pet.raca || 'SRD'}
-          </span>
-          <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium bg-purple-50 text-purple-700 border border-purple-100">
-             <FaRulerVertical className="mr-1" /> {pet.porte}
-          </span>
-           <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium bg-pink-50 text-pink-700 border border-pink-100">
-             <FaBirthdayCake className="mr-1" /> {pet.idade} anos
-          </span>
-        </div>
-
-        <div className="flex-grow"></div>
-
-        <div className="mt-auto w-full py-2 bg-yellow-50 rounded-lg text-yellow-600 font-bold text-sm text-center group-hover:bg-amber-500 group-hover:text-white transition-colors duration-300 flex items-center justify-center gap-2">
-            {statusAtual === 'ADOTADO' ? "Ver Detalhes" : <>Ver Detalhes <FaArrowRight size={12} /></>}
-        </div>
-
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 };
 

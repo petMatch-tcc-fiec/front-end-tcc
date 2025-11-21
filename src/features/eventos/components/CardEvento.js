@@ -1,15 +1,14 @@
 import React from 'react';
 import { Link } from "react-router-dom";
-import { FaTrash, FaCalendarAlt, FaMapMarkerAlt } from 'react-icons/fa';
+import { FaTrash, FaCalendarAlt, FaMapMarkerAlt, FaArrowRight, FaBuilding } from 'react-icons/fa';
 
-// Peguei a função 'formatarData' do seu EventoList.js
 const formatarData = (dataString) => {
   if (!dataString) return "Data indefinida";
   try {
     const data = new Date(dataString);
     return data.toLocaleString('pt-BR', {
       day: '2-digit',
-      month: '2-digit',
+      month: 'short',
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
@@ -19,51 +18,74 @@ const formatarData = (dataString) => {
   }
 };
 
-// --- ⚠️ 1. ADICIONE 'showControls' NAS PROPS ---
 const CardEvento = ({ evento, onDeletar, showControls }) => {
+  
+  // Função para garantir que o clique na lixeira não abra o evento
   const handleDeleteClick = (e) => {
-    e.preventDefault(); // Impede a navegação do <Link>
+    e.preventDefault(); 
+    e.stopPropagation(); 
     onDeletar(evento.id);
   };
 
+  // Proteção caso a ONG não venha preenchida
+  const nomeOng = evento.ong ? evento.ong.nomeFantasiaOng : "Organizador não informado";
+
   return (
-    <Link to={`/eventos/${evento.id}`} className="block">
-      <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden transform hover:scale-[1.02] relative">
+    <div className="relative h-full group">
+      
+      {/* --- ⚠️ BOTÃO DE LIXEIRA --- */}
+      {showControls && (
+        <button
+          onClick={handleDeleteClick}
+          className="absolute top-3 right-3 z-50 p-2.5 bg-red-600 text-white rounded-full shadow-lg hover:bg-red-700 hover:scale-110 transition-all duration-200 border-2 border-white"
+          title="Excluir este evento"
+        >
+          <FaTrash size={14} />
+        </button>
+      )}
 
-        {/* --- ⚠️ 2. ADICIONE A CONDIÇÃO AQUI --- */}
-        {/* Mostra o botão de lixo SÓ SE 'showControls' for verdadeiro */}
-        {showControls && (
-          <button
-            onClick={handleDeleteClick}
-            className="absolute top-3 right-3 z-10 p-2 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
-            aria-label="Excluir evento"
-          >
-            <FaTrash size={14} />
-          </button>
-        )}
+      <Link to={`/eventos/${evento.id}`} className="block h-full no-underline">
+        <div className="bg-white rounded-2xl shadow-sm hover:shadow-xl border border-gray-100 overflow-hidden transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full">
+          
+          {/* Faixa decorativa no topo */}
+          <div className="h-3 bg-gradient-to-r from-yellow-400 to-orange-400 w-full" />
 
-        {/* O resto do card é igual */}
-        <div className="p-4">
-          <h3 className="text-xl font-semibold text-gray-800 mb-3 truncate pr-10">
-            {evento.nome}
-          </h3>
+          <div className="p-5 flex flex-col flex-1">
+            {/* Título */}
+            <h3 className="text-xl font-bold text-gray-800 mb-2 pr-8 group-hover:text-yellow-600 transition-colors line-clamp-2">
+              {evento.nome}
+            </h3>
 
-          <div className="flex items-center text-gray-700 mb-2">
-            <FaCalendarAlt className="mr-2 text-indigo-600" />
-            <span className="text-md font-medium">
-              {formatarData(evento.dataHora)}
-            </span>
-          </div>
+            {/* Informações */}
+            <div className="space-y-2 flex-1">
+              
+              {/* --- NOVA LINHA: ONG --- */}
+              <div className="flex items-start text-gray-600 text-sm">
+                <FaBuilding className="mt-1 mr-3 text-yellow-500 shrink-0" />
+                <span className="capitalize font-medium">{nomeOng}</span>
+              </div>
 
-          <div className="flex items-center text-gray-600">
-            <FaMapMarkerAlt className="mr-2 text-indigo-600" />
-            <span className="text-md">
-              {evento.endereco}
-            </span>
+              <div className="flex items-start text-gray-600 text-sm">
+                <FaCalendarAlt className="mt-1 mr-3 text-yellow-500 shrink-0" />
+                <span className="capitalize font-medium">{formatarData(evento.dataHora)}</span>
+              </div>
+
+              <div className="flex items-start text-gray-600 text-sm">
+                <FaMapMarkerAlt className="mt-1 mr-3 text-yellow-500 shrink-0" />
+                <span className="capitalize font-medium">{evento.endereco}</span>
+              </div>
+            </div>
+
+            {/* Rodapé "Ver detalhes" */}
+            <div className="mt-6 pt-4 border-t border-gray-50 flex justify-end">
+               <span className="text-xs font-bold text-yellow-600 uppercase tracking-wider flex items-center gap-1">
+                 Ver detalhes <FaArrowRight size={10} />
+               </span>
+            </div>
           </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 };
 

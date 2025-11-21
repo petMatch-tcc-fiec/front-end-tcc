@@ -17,21 +17,39 @@ import StatusModal from './shared/components/StatusModal';
 import { Toaster } from 'react-hot-toast';
 import { requestForToken, onMessageListener } from './firebase';
 import useAuthStore from './shared/store/AuthStore';
+import useUserStore from './shared/store/UserStore'; // Adicionado para ler o tipo
 import PublicRoute from './shared/components/PublicRoute';
 import PrivateRoute from './shared/components/PrivateRoute';
-import EventosPage from './features/eventos/EventosPage'; // A nova lista (Passo 3)
-import EventoPage from './features/eventos/[id]/EventoPage'; // A nova pág. de detalhes (Passo 4)
+import EventosPage from './features/eventos/EventosPage';
+import EventoPage from './features/eventos/[id]/EventoPage';
 import EventoForm from './features/eventos/components/EventoForm';
 import AdminUploadScreen from './features/splash/components/AdminUploadScreen';
 import PetsPage from './features/pet/PetsPage';
 import PetForm from './features/pet/components/PetForm';
 import PetPage from './features/pet/[id]/PetPage';
 import EditarPerfilPage from './features/splash/components/EditarPerfilPage.js';
-// ou: import EventoForm from './features/eventos/components/EventoForm';
-
-import './index.css';
 import AdminRoute from './shared/components/AdminRoute';
 import MeusInteressesPage from './features/pet/adocao/MeusInteressesPage.js';
+
+import './index.css';
+
+// --- COMPONENTE CONTROLADOR DE ROTA INTELIGENTE ---
+const RotaNovidades = () => {
+  const userTipo = useUserStore((state) => state.tipo);
+
+  // 1. Se for ONG -> Vai para a Gestão de Adoções (Fila)
+  if (userTipo === 'ONG') {
+    return <SplashScreen><FilaAdocaoPage /></SplashScreen>;
+  }
+  
+  // 2. Se for Usuário Logado (Adotante) -> Vai para Meus Interesses
+  if (userTipo && userTipo !== 'ONG') {
+    return <SplashScreen><MeusInteressesPage /></SplashScreen>;
+  }
+
+  // 3. Se não estiver logado ou não tiver tipo definido -> Vai para a tela genérica de Novidades
+  return <SplashScreen><NovidadesScreen /></SplashScreen>;
+};
 
 function App() {
   const [token, setToken] = React.useState(null);
@@ -60,7 +78,9 @@ function App() {
               {/* GRUPO 1: ROTAS PÚBLICAS GERAIS */}
               <Route element={<MainLayout />}>
                 <Route path="/" element={<Home />} />
-                <Route path="/novidades" element={<SplashScreen><NovidadesScreen /></SplashScreen>} />
+                
+                {/* ✨ ROTA NOVIDADES INTELIGENTE ✨ */}
+                <Route path="/novidades" element={<RotaNovidades />} />
               </Route>
 
               {/* GRUPO 2: ROTAS DE "CONVIDADO" (Apenas para deslogados) */}
@@ -77,46 +97,34 @@ function App() {
               <Route element={<PrivateRoute />}>
                 <Route element={<MainLayout />}>
                   <Route path="/ong-home" element={<SplashScreen><OngHome /></SplashScreen>} />
+                  
+                  {/* Rota explícita para ONG acessar a fila se quiser usar link direto */}
                   <Route path="/ong/fila-adocao" element={<SplashScreen><FilaAdocaoPage /></SplashScreen>} />                  
-                                    
+                                      
                   <Route path="/adotante-home" element={<SplashScreen><AdotanteHome /></SplashScreen>} />
                   <Route path="/editar-perfil" element={<EditarPerfilPage />} />
-                  {/* ✨ 2. Nova Rota para Meus Interesses */}
+                  
+                  {/* Rota explícita para Adotante acessar interesses direto */}
                   <Route path="/meus-interesses" element={<SplashScreen><MeusInteressesPage /></SplashScreen>} />
 
-                  {/* === 👇 ROTAS DE EVENTOS ATUALIZADAS 👇 === */}
-
-                  {/* 1. A Lista (Substitui EventoList por EventosPage) */}
+                  {/* === EVENTOS === */}
                   <Route path="/eventos" element={<SplashScreen><EventosPage /></SplashScreen>} />
-
-                  {/* 2. O Formulário (Já estava correto) */}
                   <Route path="/eventos/novo" element={<SplashScreen><EventoForm /></SplashScreen>} />
-
-                  {/* 3. A Página de Detalhes (A nova rota que faltava) */}
                   <Route path="/eventos/:id" element={<SplashScreen><EventoPage /></SplashScreen>} />
                   
-
-
-                  {/* === 🐾 NOVA ROTA DE LISTA DE PETS 🐾 === */}
-                  {/* Adicionada aqui para usar o MainLayout (Header/Footer) */}
+                  {/* === PETS === */}
                   <Route path="/adotar" element={<SplashScreen><PetsPage /></SplashScreen>} />
-
                   <Route path="/adotar/novo" element={<SplashScreen><PetForm /></SplashScreen>} />
-
                   <Route path="/adotar/:id" element={<SplashScreen><PetPage /></SplashScreen>} />
-
-                  <Route path="/ong/fila-adocao" element={<FilaAdocaoPage />} />
                   
-              </Route>
+                </Route>
               </Route>
               
-                  {/* --- (2) NOVO GRUPO DE ROTAS DE ADMIN --- */}
-                  {/* Estas rotas SÓ funcionam se o usuário estiver logado
-                      E o <AdminRoute> verificar que ele é 'ADMIN' */}
-                    <Route element={<AdminRoute />}>
-                    <Route path="/admin/upload" element={<AdminUploadScreen />} />
-                    {/* <Route path="/admin/dashboard" element={<AdminDashboard />} /> */}
-                  </Route>
+              {/* GRUPO 4: ADMIN */}
+              <Route element={<AdminRoute />}>
+                <Route path="/admin/upload" element={<AdminUploadScreen />} />
+              </Route>
+
             </Routes>
           </AuthProvider>
         </Router>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PetService from './services/PetService'; 
 import CardPet from './components/CardPet'; 
-import { FaPlus, FaSearch, FaTimes } from 'react-icons/fa';
+import { FaPlus, FaSearch, FaTimes, FaPaw, FaFilter } from 'react-icons/fa';
 import useAuthStore from '../../shared/store/AuthStore';
 import useUserStore from '../../shared/store/UserStore';
 
@@ -13,6 +13,7 @@ const filtrosIniciais = {
   porte: "TODOS",
   sexo: "TODOS",
   idade: "TODOS"
+  // Removido filtro específico de ONG
 };
 
 const PetsPage = () => {
@@ -31,8 +32,6 @@ const PetsPage = () => {
       setError(null);
       const data = await PetService.getPets(); 
       
-      // ✨ CORREÇÃO 1: Limpeza preventiva dos dados
-      // Só aceita pets que tenham ID e Nome válidos. Remove lixo/nulos.
       if (Array.isArray(data)) {
         const validos = data.filter(pet => pet && pet.id && pet.nome);
         setMasterPets(validos); 
@@ -66,7 +65,6 @@ const PetsPage = () => {
 
   const petsFiltrados = useMemo(() => {
     return masterPets.filter(pet => {
-      // Proteção extra caso algum item inválido tenha passado
       if (!pet || !pet.nome) return false; 
 
       const checarString = (petField, filterValue) => {
@@ -81,17 +79,16 @@ const PetsPage = () => {
         
         const nome = pet.nome?.toLowerCase() || "";
         const raca = pet.raca?.toLowerCase() || "";
-        const localizacao = pet.localizacao?.toLowerCase() || "";
+        // ✨ Nova Lógica: Busca também pelo nome da ONG
+        const nomeOng = pet.ong?.nomeFantasiaOng?.toLowerCase() || "";
         
-        return nome.includes(busca) || 
-               raca.includes(busca) || 
-               localizacao.includes(busca);
+        // Retirada a busca por localização, mantendo Nome, Raça ou ONG
+        return nome.includes(busca) || raca.includes(busca) || nomeOng.includes(busca);
       };
 
       const checarIdade = () => {
         const filtroIdade = filtros.idade;
         if (filtroIdade === "TODOS") return true;
-
         const anos = pet.idade; 
         if (anos === null || anos === undefined) return false; 
 
@@ -114,130 +111,163 @@ const PetsPage = () => {
   }, [masterPets, filtros]);
 
   const handleDeletar = async (id) => {
-    if (window.confirm("Tem certeza que deseja excluir este pet?")) { 
+    if (window.confirm("Tem certeza que deseja excluir este pet permanentemente?")) { 
       try {
         await PetService.deletarPet(id); 
-        setMasterPets(masterPets.filter(pet => pet.id !== id)); 
+        setMasterPets(prev => prev.filter(pet => pet.id !== id)); 
       } catch (err) {
         console.error("Erro ao excluir pet:", err); 
+        alert("Erro ao excluir pet. Tente novamente.");
       }
     }
   };
 
   const renderSelect = (name, label, options) => (
-    <div className="flex-1 min-w-[150px]">
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700">{label}</label>
-      <select
-        id={name}
-        name={name}
-        value={filtros[name]}
-        onChange={handleFiltroChange}
-        className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-yellow-500 focus:border-yellow-500"
-      >
-        {options.map(option => (
-          <option key={option.value} value={option.value}>{option.label}</option>
-        ))}
-      </select>
+    <div className="flex-1 min-w-[140px]">
+      <label htmlFor={name} className="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">{label}</label>
+      <div className="relative">
+        <select
+          id={name}
+          name={name}
+          value={filtros[name]}
+          onChange={handleFiltroChange}
+          className="block w-full pl-3 pr-10 py-2 text-base border-gray-200 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 sm:text-sm rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer appearance-none"
+        >
+          {options.map(option => (
+            <option key={option.value} value={option.value}>{option.label}</option>
+          ))}
+        </select>
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+        </div>
+      </div>
     </div>
   );
 
   return (
-    <div className="p-8">
-      <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
-        <h1 className="text-4xl font-extrabold text-gray-900">
-          Pets para Adoção 
-        </h1>
-        {isAuthenticated && userTipo === 'ONG' && (
-          <button
-            onClick={() => navigate('/adotar/novo')} 
-            className="flex items-center gap-2 px-5 py-3 bg-black text-white font-semibold rounded-lg shadow-md hover:bg-gray-800 transition-colors"
-          >
-            <FaPlus />
-            Novo Pet 
-          </button>
+    <div className="min-h-screen p-6 md:p-10">
+       <div className="max-w-7xl mx-auto">
+        
+        {/* --- CABEÇALHO --- */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-10">
+          <div className="text-center md:text-left">
+            <h1 className="text-4xl md:text-5xl font-black text-gray-800 drop-shadow-sm flex items-center gap-3 justify-center md:justify-start">
+              <FaPaw className="text-yellow-500" />
+              Adote um Amigo
+            </h1>
+            <p className="text-gray-600 mt-2 text-lg font-medium">
+              Encontre seu companheiro perfeito ou ajude um pet a achar um lar.
+            </p>
+          </div>
+
+          {isAuthenticated && userTipo === 'ONG' && (
+            <button
+              onClick={() => navigate('/adotar/novo')}
+              className="group relative flex items-center gap-3 px-8 py-4 bg-gray-900 text-white font-bold rounded-full shadow-xl hover:bg-gray-800 hover:scale-105 transition-all duration-300"
+            >
+              <div className="bg-yellow-500 rounded-full p-1 group-hover:rotate-90 transition-transform">
+                <FaPlus className="text-black text-sm" />
+              </div>
+              <span>Novo Pet</span>
+            </button>
+          )}
+        </div>
+
+        {/* --- PAINEL DE FILTROS --- */}
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 mb-12">
+          <div className="flex items-center gap-2 mb-4 text-gray-400 font-bold text-sm uppercase tracking-wider">
+             <FaFilter /> Filtros de Busca
+          </div>
+          
+          {/* Voltei para lg:grid-cols-5 já que tiramos um filtro */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+              
+              {renderSelect("especie", "Espécie", [
+                { value: "TODOS", label: "Todas" },
+                { value: "CACHORRO", label: "Cachorro" },
+                { value: "GATO", label: "Gato" }
+              ])}
+              {renderSelect("porte", "Porte", [
+                { value: "TODOS", label: "Todos" },
+                { value: "PEQUENO", label: "Pequeno" },
+                { value: "MÉDIO", label: "Médio" },
+                { value: "GRANDE", label: "Grande" }
+              ])}
+              {renderSelect("sexo", "Sexo", [
+                { value: "TODOS", label: "Todos" },
+                { value: "M", label: "Macho" },
+                { value: "F", label: "Fêmea" }
+              ])}
+              {renderSelect("idade", "Idade", [
+                { value: "TODOS",   label: "Todas" },
+                { value: "FILHOTE", label: "Filhote" },
+                { value: "ADULTO",  label: "Adulto" },
+                { value: "IDOSO",   label: "Idoso" }
+              ])}
+              
+              <div className="flex items-end">
+                <button
+                  onClick={limparFiltros}
+                  className="w-full py-2 bg-gray-100 text-gray-600 font-bold rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 h-[42px]"
+                >
+                  <FaTimes size={12} /> Limpar
+                </button>
+              </div>
+          </div>
+
+          {/* Barra de Busca Texto */}
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <FaSearch className="text-gray-400" />
+            </div>
+            <input
+              type="text"
+              name="buscaTexto"
+              value={filtros.buscaTexto}
+              onChange={handleFiltroChange}
+              placeholder="Buscar por nome, raça ou ONG..." // ✨ Placeholder atualizado
+              className="block w-full pl-11 pr-4 py-3 bg-gray-50 border-transparent text-gray-900 placeholder-gray-400 rounded-xl focus:bg-white focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all"
+            />
+          </div>
+        </div>
+
+        {/* --- CONTEÚDO (GRID) --- */}
+        {loading && (
+           <div className="flex justify-center items-center py-20">
+             <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-yellow-500"></div>
+           </div>
+        )}
+
+        {error && <p className="text-center text-red-500 font-bold bg-red-50 p-4 rounded-lg">{error}</p>}
+
+        {!loading && !error && (
+          <>
+            {petsFiltrados.length === 0 ? (
+               <div className="text-center py-20 bg-white/60 backdrop-blur-sm rounded-3xl shadow-sm max-w-2xl mx-auto border border-white">
+                <div className="text-6xl mb-4">🐱</div>
+                <p className="text-2xl font-bold text-gray-700 mb-2">Nenhum pet encontrado</p>
+                <p className="text-gray-500">
+                  {masterPets.length === 0 ? "Ainda não temos pets cadastrados." : "Tente ajustar os filtros de busca."}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                {petsFiltrados.map(pet => {
+                   if (!pet || !pet.id || !pet.nome) return null;
+                   return (
+                      <CardPet
+                        key={pet.id}
+                        pet={pet} 
+                        onDeletar={handleDeletar}
+                        showControls={isAuthenticated && userTipo === 'ONG'}
+                      />
+                   );
+                })}
+              </div>
+            )}
+          </>
         )}
       </div>
-
-      <div className="mb-10 p-4 bg-gray-50 rounded-lg border border-gray-200">
-        <div className="flex flex-wrap items-end gap-4">
-          
-          {renderSelect("especie", "Espécie", [
-            { value: "TODOS", label: "Todas as Espécies" },
-            { value: "CACHORRO", label: "Cachorro" },
-            { value: "GATO", label: "Gato" }
-          ])}
-
-          {renderSelect("porte", "Porte", [
-            { value: "TODOS", label: "Todos os Portes" },
-            { value: "PEQUENO", label: "Pequeno" },
-            { value: "MÉDIO", label: "Médio" },
-            { value: "GRANDE", label: "Grande" }
-          ])}
-
-          {renderSelect("sexo", "Sexo", [
-            { value: "TODOS", label: "Todos os Sexos" },
-            { value: "M", label: "Macho" },
-            { value: "F", label: "Fêmea" }
-          ])}
-
-          {renderSelect("idade", "Idade", [
-            { value: "TODOS",   label: "Todas as Idades" },
-            { value: "FILHOTE", label: "Filhote (0-2 anos)" },
-            { value: "ADULTO",  label: "Adulto (3-7 anos)" },
-            { value: "IDOSO",   label: "Idoso (8+ anos)" }
-          ])}
-          
-          <button
-            onClick={limparFiltros}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-          >
-            <FaTimes /> Limpar
-          </button>
-        </div>
-
-        <div className="mt-4 relative">
-          <input
-            type="text"
-            name="buscaTexto"
-            value={filtros.buscaTexto}
-            onChange={handleFiltroChange}
-            placeholder="    Buscar por nome, raça ou localização..."
-            className="w-full text-lg p-3 pl-10 rounded-lg border-2 border-gray-300 focus:border-yellow-500 focus:outline-none"
-          />
-          <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-        </div>
-      </div>
-
-      {loading && <p className="text-center text-lg">Carregando pets...</p>}
-      {error && <p className="text-center text-lg text-red-600">{error}</p>}
-
-      {!loading && !error && (
-        <>
-          {petsFiltrados.length === 0 ? (
-            <p className="text-center text-lg text-gray-600">
-              {masterPets.length === 0 ? 
-                "Nenhum pet cadastrado ainda." : 
-                "Nenhum pet encontrado com esse filtro."}
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 justify-items-center">
-              {petsFiltrados.map(pet => {
-                 // ✨ CORREÇÃO 2: Última barreira de defesa
-                 if (!pet || !pet.id || !pet.nome) return null;
-
-                 return (
-                    <CardPet
-                      key={pet.id}
-                      pet={pet} 
-                      onDeletar={handleDeletar}
-                      showControls={isAuthenticated && userTipo === 'ONG'}
-                    />
-                 );
-              })}
-            </div>
-          )}
-        </>
-      )}
     </div>
   );
 };

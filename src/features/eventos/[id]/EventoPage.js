@@ -1,95 +1,142 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import EventoService from '../services/EventoService'; // Ajuste o caminho de volta (../)
-import { FaCalendarAlt, FaMapMarkerAlt, FaArrowLeft } from 'react-icons/fa';
+import EventoService from '../services/EventoService'; 
+import { FaCalendarAlt, FaMapMarkerAlt, FaArrowLeft, FaBuilding } from 'react-icons/fa';
 
-// Peguei a função 'formatarData' do seu EventoList.js
 const formatarData = (dataString) => {
   if (!dataString) return "Data indefinida";
   try {
     const data = new Date(dataString);
-    // Formato mais completo para a página de detalhes
     return data.toLocaleString('pt-BR', {
-      dateStyle: 'full',
-      timeStyle: 'short'
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
     });
   } catch (error) {
     return "Data inválida";
   }
 };
 
-
 const EventoPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [evento, setEvento] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
-    // Busca o evento específico
     EventoService.getEventoById(id).then(data => {
       setEvento(data);
     }).catch(err => {
       console.error(err);
-      // Se não encontrar, volta para a lista
       navigate('/eventos');
+    }).finally(() => {
+        setLoading(false);
     });
   }, [id, navigate]);
 
-  if (!evento) {
+  if (loading || !evento) {
     return (
-      <div className="p-8 text-center">
-        <h2 className="text-2xl font-bold text-gray-600">Carregando...</h2>
+      <div className="min-h-[50vh] flex justify-center items-center">
+         <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-yellow-500"></div>
       </div>
     );
   }
 
   const dataFormatada = formatarData(evento.dataHora);
+  const nomeOng = evento.ong ? evento.ong.nomeFantasiaOng : "Organização não informada";
 
   return (
-    // Estilo da página de detalhes do professor
-    <div className="p-10 max-w-4xl mx-auto bg-white shadow-xl rounded-xl mt-10">
+    // Wrapper externo com margem para não colar no topo/fundo
+    <div className="p-4 md:p-8 max-w-5xl mx-auto mt-6 mb-12">
+      
+      {/* --- Botão Voltar --- */}
       <button 
-        onClick={() => navigate('/eventos')} // Volta para a lista
-        className="mb-6 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors flex items-center gap-2"
+        onClick={() => navigate('/eventos')} 
+        className="group mb-6 flex items-center text-gray-600 hover:text-yellow-600 transition-colors font-medium"
       >
-        <FaArrowLeft />
-        Voltar para os Eventos
+        <div className="p-2 rounded-full bg-white shadow-sm mr-3 group-hover:shadow-md transition-all group-hover:-translate-x-1">
+            <FaArrowLeft size={14} />
+        </div>
+        Voltar para lista
       </button>
 
-      <div className="flex flex-col">
-        {/* <img 
-            src={evento.imagemUrl || 'https://via.placeholder.com/800x400'} 
-            alt={evento.nome} 
-            className="w-full h-64 object-cover rounded-lg shadow-md mb-6"
-          /> */}
+      {/* --- Card Principal --- */}
+      <div className="bg-white shadow-2xl rounded-3xl overflow-hidden relative animate-fade-in-up">
         
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          {evento.nome}
-        </h1>
-        
-        {/* --- MUDANÇA REALIZADA AQUI --- */}
-        {/* Exibe a descrição dinamicamente, mas só se ela existir */}
-        {evento.descricao && (
-          <p className="text-xl text-gray-600 mb-6">
-            {evento.descricao}
-          </p>
-        )}
-        {/* --- FIM DA MUDANÇA --- */}
+        {/* Faixa decorativa no topo */}
+        <div className="h-4 bg-gradient-to-r from-yellow-400 to-orange-500 w-full" />
 
-        <div className="flex items-center text-gray-900 mb-4 p-4 bg-gray-100 rounded-lg">
-          <FaCalendarAlt className="mr-3 text-2xl text-indigo-600" />
-          <span className="text-2xl font-bold">
-            {dataFormatada}
-          </span>
+        <div className="p-8 md:p-12">
+          
+          {/* Título */}
+          <h1 className="text-4xl md:text-5xl font-black text-gray-800 mb-6 leading-tight">
+            {evento.nome}
+          </h1>
+          
+          {/* Descrição */}
+          {evento.descricao && (
+            <div className="prose prose-lg max-w-none text-gray-600 mb-10 leading-relaxed">
+              {evento.descricao}
+            </div>
+          )}
+
+          {/* --- GRID DE INFORMAÇÕES --- */}
+          {/* Alterei para lg:grid-cols-3 para caber a ONG, Data e Local lado a lado em telas grandes */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            {/* 1. Card ONG Responsável (Novo) */}
+            <div className="bg-blue-50 rounded-2xl p-6 border border-blue-100 flex items-start transition-transform hover:scale-[1.01]">
+              <div className="bg-white p-3 rounded-full shadow-sm text-blue-600 mr-4 shrink-0">
+                <FaBuilding size={24} />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-blue-500 uppercase tracking-wider mb-1">Organizado por</p>
+                <p className="text-lg font-bold text-gray-800 leading-tight">
+                  {nomeOng}
+                </p>
+              </div>
+            </div>
+
+            {/* 2. Card Data */}
+            <div className="bg-yellow-50 rounded-2xl p-6 border border-yellow-100 flex items-start transition-transform hover:scale-[1.01]">
+              <div className="bg-white p-3 rounded-full shadow-sm text-yellow-600 mr-4 shrink-0">
+                <FaCalendarAlt size={24} />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-yellow-600 uppercase tracking-wider mb-1">Data e Horário</p>
+                <p className="text-lg font-bold text-gray-800 capitalize leading-tight">
+                  {dataFormatada}
+                </p>
+              </div>
+            </div>
+
+            {/* 3. Card Localização */}
+            <div className="bg-orange-50 rounded-2xl p-6 border border-orange-100 flex items-start transition-transform hover:scale-[1.01] md:col-span-2 lg:col-span-1">
+              <div className="bg-white p-3 rounded-full shadow-sm text-orange-500 mr-4 shrink-0">
+                <FaMapMarkerAlt size={24} />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-orange-500 uppercase tracking-wider mb-1">Localização</p>
+                <p className="text-lg font-bold text-gray-800 leading-tight">
+                  {evento.endereco}
+                </p>
+                <a 
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(evento.endereco)}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-sm text-orange-600 hover:text-orange-800 underline mt-1 block"
+                >
+                    Ver no mapa
+                </a>
+              </div>
+            </div>
+
+          </div>
+          
         </div>
-        
-        <div className="flex items-center text-gray-900 p-4 bg-gray-100 rounded-lg">
-          <FaMapMarkerAlt className="mr-3 text-2xl text-indigo-600" />
-          <span className="text-xl font-medium">
-            {evento.endereco}
-          </span>
-        </div>
-        
       </div>
     </div>
   );

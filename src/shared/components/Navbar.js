@@ -116,7 +116,7 @@ const Navbar = () => {
       <div className="w-full max-w-7xl mx-auto flex items-center justify-between px-6 py-3 flex-wrap md:flex-nowrap">
         
         {/* Logo (sem alteração) */}
-        <div onClick={() => handleNavigate("/")} className="cursor-pointer">
+        <div onClick={() => handleNavigate("/")} className="cursor-pointer hover:scale-105">
           <img src={Logo} alt="Logo PetMatch" className="h-14 max-w-[120px]" />
         </div>
 
