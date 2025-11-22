@@ -32,6 +32,7 @@ import AdminRoute from './shared/components/AdminRoute';
 import MeusInteressesPage from './features/pet/adocao/MeusInteressesPage.js';
 
 import './index.css';
+import TermosLegais from './shared/components/TermosLegais.js';
 
 // --- COMPONENTE CONTROLADOR DE ROTA INTELIGENTE ---
 const RotaNovidades = () => {
@@ -90,6 +91,7 @@ function App() {
                   <Route path="/tipo-cadastro" element={<SplashScreen><TipoCadastro /></SplashScreen>} />
                   <Route path="/adotante-form" element={<SplashScreen><AdotanteForm /></SplashScreen>} />
                   <Route path="/ong-form" element={<SplashScreen><OngForm /></SplashScreen>} />
+                  <Route path="/termos" element={<SplashScreen><TermosLegais /></SplashScreen>} />
                 </Route>
               </Route>
 

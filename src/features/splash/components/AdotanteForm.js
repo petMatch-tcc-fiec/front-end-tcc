@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { cpf } from "cpf-cnpj-validator";
 import { FaEye, FaEyeSlash, FaArrowLeft } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 
 import AdotanteService from "../services/AdotanteService";
@@ -316,18 +316,18 @@ const AdotanteForm = () => {
               type="checkbox"
               checked={form.termos}
               onChange={handleForm}
-              className="w-6 h-6 border-gray-400 rounded"
+              className="w-6 h-6 border-gray-400 rounded cursor-pointer"
             />
-            <label htmlFor="termos" className="text-base text-black">
+            <label htmlFor="termos" className="text-base text-black cursor-pointer">
               Li e aceito os{" "}
-              <a
-                href="httpsa://youtu.be/LHqRwGTP2qQ?si=aEOQvKV9cTonfz0k"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline text-blue-600 hover:text-blue-800"
+              <Link
+      to="/termos"   // <--- Aqui aponta para a página que criamos
+      target="_blank" // <--- Abre em nova aba para não perder o cadastro
+      rel="noopener noreferrer"
+      className="underline text-blue-600 hover:text-blue-800"
               >
                 termos de uso
-              </a>
+              </Link>
             </label>
           </div>
           {errors.termos && (
