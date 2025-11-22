@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaHeart, FaSearch, FaUserEdit } from 'react-icons/fa';
+import { FaHeart, FaSearch, FaCalendarAlt } from 'react-icons/fa';
 
 const AdotanteHome = () => {
   return (
@@ -50,16 +50,16 @@ const AdotanteHome = () => {
             <p className="text-gray-600 text-sm">Visualize seus pedidos e acompanhe o status (Aprovado/Pendente).</p>
           </Link>
 
-          {/* 3. Meu Perfil (Ajustado rota para /editar-perfil que existe no App.js) */}
+          {/* 3. Eventos (Antigo botão Meu Perfil) */}
           <Link
-            to="/editar-perfil"
+            to="/eventos"
             className="block p-6 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 border border-gray-100 flex flex-col items-center text-center group"
           >
-            <FaUserEdit className="text-5xl text-green-500 mb-3 group-hover:text-green-700" />
+            <FaCalendarAlt className="text-5xl text-green-500 mb-3 group-hover:text-green-700" />
             <h2 className="text-xl font-bold text-gray-800 group-hover:text-black mb-1">
-              Meu Perfil
+              Eventos
             </h2>
-            <p className="text-gray-600 text-sm">Atualize seus dados cadastrais e senha.</p>
+            <p className="text-gray-600 text-sm">Confira feiras de adoção, campanhas e encontros.</p>
           </Link>
 
         </div>
