@@ -1,58 +1,71 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-// --- Ícones Atualizados (Adicionado FaUserEdit) ---
 import { 
   FaHome, FaPaw, FaStar, FaUserCircle, FaSignOutAlt, 
-  FaCalendarAlt, // Ícone para Eventos
-  FaBars,       // Ícone para Menu Hamburger
-  FaTimes,      // Ícone para Fechar Menu
-  FaUserEdit    // <--- ADICIONADO
+  FaCalendarAlt, FaBars, FaTimes, FaUserEdit 
 } from "react-icons/fa";
 import Logo from '../../features/splash/assets/Frame1.png';
 
 const Navbar = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState(false); // Dropdown do usuário
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // --- NOVO: Menu mobile ---
-  const menuRef = useRef(null);
+  
+  const [menuOpen, setMenuOpen] = useState(false); 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); 
+  
+  const menuRef = useRef(null);         // Ref para dropdown Desktop
+  const mobileMenuRef = useRef(null);   // <--- NOVO: Ref para o container do menu Mobile
+  const hamburgerRef = useRef(null);    // <--- NOVO: Ref para o botão Hamburger
   
   const welcomeMessage = user?.nomeFantasiaOng || user?.nome || "Bem-vindo(a)";
 
-  // --- Lógica para fechar o dropdown DO USUÁRIO ao clicar fora ---
+  // --- Lógica Atualizada para fechar AMBOS os menus ao clicar fora ---
   useEffect(() => {
     function handleClickOutside(event) {
+      // 1. Lógica para Desktop (já existia)
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setMenuOpen(false);
       }
+
+      // 2. Lógica para Mobile (ADICIONADA)
+      // Verifica se o menu está aberto E se o clique NÃO foi dentro do menu mobile
+      // E TAMBÉM se o clique NÃO foi no botão hamburger (para evitar conflito)
+      if (isMobileMenuOpen && 
+          mobileMenuRef.current && 
+          !mobileMenuRef.current.contains(event.target) &&
+          hamburgerRef.current &&
+          !hamburgerRef.current.contains(event.target)
+      ) {
+        setIsMobileMenuOpen(false);
+      }
     }
-    if (menuOpen) {
+
+    // Adiciona o listener se QUALQUER um dos menus estiver aberto
+    if (menuOpen || isMobileMenuOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     } else {
       document.removeEventListener("mousedown", handleClickOutside);
     }
+    
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [menuOpen]);
+  }, [menuOpen, isMobileMenuOpen]); // <--- Adicionado isMobileMenuOpen na dependência
 
-  // --- ATUALIZADO: handleNavigate agora fecha os dois menus ---
   const handleNavigate = (path) => {
     navigate(path);
-    setMenuOpen(false); // Fecha dropdown do usuário
-    setIsMobileMenuOpen(false); // Fecha menu mobile
+    setMenuOpen(false); 
+    setIsMobileMenuOpen(false); 
   };
 
-  // --- ATUALIZADO: handleLogout agora fecha os dois menus ---
   const handleLogout = () => {
     logout();
     setMenuOpen(false);
-    setIsMobileMenuOpen(false); // Fecha menu mobile
+    setIsMobileMenuOpen(false); 
     navigate("/login"); 
   };
 
-  // Função 'handleHomeClick' não precisa de alteração, pois já usa 'handleNavigate'
   const handleHomeClick = () => {
     if (isAuthenticated && user) {
       if (user.tipo === "ONG") {
@@ -65,7 +78,6 @@ const Navbar = () => {
     }
   };
 
-  // --- NOVO: Componente interno para evitar repetição de código dos links ---
   const NavLinks = () => (
     <>
       <li>
@@ -92,12 +104,7 @@ const Navbar = () => {
           <FaStar /> Novidades
         </button>
       </li>
-
-      {/* --- ✨✨ CORREÇÃO AQUI ✨✨ --- */}
-      {/* Agora este botão só aparece se o usuário estiver autenticado,
-        o objeto 'user' existir, E o 'user.tipo' for "ONG".
-      */}
-      {isAuthenticated && user && (
+      {isAuthenticated && user && user.tipo === "ONG" && (
         <li>
           <button 
             onClick={() => handleNavigate("/eventos")} 
@@ -111,23 +118,20 @@ const Navbar = () => {
   );
 
   return (
-    // --- ATUALIZADO: Altura ajustada para responsividade ---
     <nav className="fixed top-0 left-0 w-full bg-white shadow-md z-50 md:h-20 flex items-center px-6">
       <div className="w-full max-w-7xl mx-auto flex items-center justify-between px-6 py-3 flex-wrap md:flex-nowrap">
         
-        {/* Logo (sem alteração) */}
+        {/* Logo */}
         <div onClick={() => handleNavigate("/")} className="cursor-pointer hover:scale-105">
           <img src={Logo} alt="Logo PetMatch" className="h-14 max-w-[120px]" />
         </div>
 
-        {/* === MENU DESKTOP ===
-            (Escondido em mobile 'hidden', aparece em telas 'md' ou maiores) */}
+        {/* === MENU DESKTOP === */}
         <div className="hidden md:flex items-center space-x-6">
           <ul className="flex items-center space-x-4">
             <NavLinks />
           </ul>
           
-          {/* Dropdown do Usuário (Desktop) - (código original) */}
           <div className="relative" ref={menuRef}>
             <button onClick={() => setMenuOpen(!menuOpen)} className="flex items-center space-x-2 text-gray-700 hover:text-yellow-500">
               <FaUserCircle className="h-6 w-6" />
@@ -137,7 +141,6 @@ const Navbar = () => {
               <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl z-20">
                 {isAuthenticated ? (
                   <>
-                    {/* --- ✨✨ BOTÃO DE PERFIL ADICIONADO (DESKTOP) ✨✨ --- */}
                     <button
                       onClick={() => handleNavigate("/editar-perfil")}
                       className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition"
@@ -163,10 +166,10 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* === BOTÃO HAMBURGER (MOBILE) ===
-            (Aparece em mobile, escondido 'md:hidden' em telas maiores) */}
+        {/* === BOTÃO HAMBURGER (MOBILE) === */}
         <div className="md:hidden flex items-center">
           <button 
+            ref={hamburgerRef} // <--- ADICIONADO O REF AQUI
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
             className="text-gray-700 hover:text-yellow-500 focus:outline-none"
           >
@@ -174,25 +177,24 @@ const Navbar = () => {
           </button>
         </div>
 
-        {/* === MENU MOBILE DROPDOWN ===
-            (Aparece abaixo se 'isMobileMenuOpen' for true, apenas em mobile) */}
+        {/* === MENU MOBILE DROPDOWN === */}
         {isMobileMenuOpen && (
-          <div className="md:hidden w-full mt-4 flex flex-col">
-            {/* Links de Navegação Mobile */}
+          <div 
+            ref={mobileMenuRef} // <--- ADICIONADO O REF AQUI
+            className="md:hidden w-full mt-4 flex flex-col shadow-inner p-4 bg-white rounded-b-lg" 
+          >
             <ul className="flex flex-col space-y-3">
               <NavLinks />
             </ul>
             
             <hr className="my-4" />
             
-            {/* Links do Usuário Mobile */}
             <div className="flex flex-col space-y-3">
               {isAuthenticated ? (
                 <>
                   <span className="flex items-center gap-2 text-gray-700 px-4 py-2">
                     <FaUserCircle className="h-6 w-6" /> {welcomeMessage}
                   </span>
-                  {/* --- ✨✨ BOTÃO DE PERFIL ADICIONADO (MOBILE) ✨✨ --- */}
                   <button
                     onClick={() => handleNavigate("/editar-perfil")}
                     className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition"

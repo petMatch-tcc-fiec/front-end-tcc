@@ -49,7 +49,7 @@ const RotaNovidades = () => {
   }
 
   // 3. Se não estiver logado ou não tiver tipo definido -> Vai para a tela genérica de Novidades
-  return <SplashScreen><NovidadesScreen /></SplashScreen>;
+  return <SplashScreen><LoginScreen /></SplashScreen>;
 };
 
 function App() {
