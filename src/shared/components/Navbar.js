@@ -15,8 +15,8 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); 
   
   const menuRef = useRef(null);         // Ref para dropdown Desktop
-  const mobileMenuRef = useRef(null);   // <--- NOVO: Ref para o container do menu Mobile
-  const hamburgerRef = useRef(null);    // <--- NOVO: Ref para o botão Hamburger
+  const mobileMenuRef = useRef(null);   // Ref para o container do menu Mobile
+  const hamburgerRef = useRef(null);    // Ref para o botão Hamburger
   
   const welcomeMessage = user?.nomeFantasiaOng || user?.nome || "Bem-vindo(a)";
 
@@ -28,9 +28,7 @@ const Navbar = () => {
         setMenuOpen(false);
       }
 
-      // 2. Lógica para Mobile (ADICIONADA)
-      // Verifica se o menu está aberto E se o clique NÃO foi dentro do menu mobile
-      // E TAMBÉM se o clique NÃO foi no botão hamburger (para evitar conflito)
+      // 2. Lógica para Mobile
       if (isMobileMenuOpen && 
           mobileMenuRef.current && 
           !mobileMenuRef.current.contains(event.target) &&
@@ -51,7 +49,7 @@ const Navbar = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [menuOpen, isMobileMenuOpen]); // <--- Adicionado isMobileMenuOpen na dependência
+  }, [menuOpen, isMobileMenuOpen]); 
 
   const handleNavigate = (path) => {
     navigate(path);
@@ -169,7 +167,7 @@ const Navbar = () => {
         {/* === BOTÃO HAMBURGER (MOBILE) === */}
         <div className="md:hidden flex items-center">
           <button 
-            ref={hamburgerRef} // <--- ADICIONADO O REF AQUI
+            ref={hamburgerRef} 
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} 
             className="text-gray-700 hover:text-yellow-500 focus:outline-none"
           >
@@ -177,47 +175,49 @@ const Navbar = () => {
           </button>
         </div>
 
-        {/* === MENU MOBILE DROPDOWN === */}
-        {isMobileMenuOpen && (
-          <div 
-            ref={mobileMenuRef} // <--- ADICIONADO O REF AQUI
-            className="md:hidden w-full mt-4 flex flex-col shadow-inner p-4 bg-white rounded-b-lg" 
-          >
-            <ul className="flex flex-col space-y-3">
-              <NavLinks />
-            </ul>
-            
-            <hr className="my-4" />
-            
-            <div className="flex flex-col space-y-3">
-              {isAuthenticated ? (
-                <>
-                  <span className="flex items-center gap-2 text-gray-700 px-4 py-2">
-                    <FaUserCircle className="h-6 w-6" /> {welcomeMessage}
-                  </span>
-                  <button
-                    onClick={() => handleNavigate("/editar-perfil")}
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition"
-                  >
-                    <FaUserEdit className="text-yellow-500" /> Editar Perfil
-                  </button>
+        {/* === MENU MOBILE DROPDOWN (ANIMADO) === */}
+        <div 
+          ref={mobileMenuRef} 
+          className={`md:hidden w-full flex flex-col bg-white rounded-b-lg overflow-hidden transition-all duration-300 ease-in-out ${
+            isMobileMenuOpen 
+              ? "max-h-[500px] opacity-100 mt-4 p-4 shadow-inner"  // Aberto
+              : "max-h-0 opacity-0 mt-0 p-0 shadow-none"           // Fechado
+          }`}
+        >
+          <ul className="flex flex-col space-y-3">
+            <NavLinks />
+          </ul>
+          
+          <hr className="my-4" />
+          
+          <div className="flex flex-col space-y-3">
+            {isAuthenticated ? (
+              <>
+                <span className="flex items-center gap-2 text-gray-700 px-4 py-2">
+                  <FaUserCircle className="h-6 w-6" /> {welcomeMessage}
+                </span>
+                <button
+                  onClick={() => handleNavigate("/editar-perfil")}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition"
+                >
+                  <FaUserEdit className="text-yellow-500" /> Editar Perfil
+                </button>
 
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition"
-                  >
-                    <FaSignOutAlt className="text-red-500" /> Sair
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button onClick={() => handleNavigate("/login")} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">Entrar</button>
-                  <button onClick={() => handleNavigate("/tipo-cadastro")} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">Cadastre-se</button>
-                </>
-              )}
-            </div>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition"
+                >
+                  <FaSignOutAlt className="text-red-500" /> Sair
+                </button>
+              </>
+            ) : (
+              <>
+                <button onClick={() => handleNavigate("/login")} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">Entrar</button>
+                <button onClick={() => handleNavigate("/tipo-cadastro")} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left">Cadastre-se</button>
+              </>
+            )}
           </div>
-        )}
+        </div>
 
       </div>
     </nav>

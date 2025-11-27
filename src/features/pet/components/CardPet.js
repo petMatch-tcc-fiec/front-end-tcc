@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from "react-router-dom";
-import { FaTrash, FaPaw, FaRulerVertical, FaBirthdayCake, FaHeart, FaArrowRight, FaCheck } from 'react-icons/fa';
+import { FaTrash, FaPaw, FaRulerVertical, FaBirthdayCake, FaArrowRight, FaCheck } from 'react-icons/fa';
 import { useAuth } from '../../../shared/context/AuthContext';
 import PetService from '../services/PetService'; 
 
@@ -10,7 +10,7 @@ const CardPet = ({ pet, onDeletar, showControls }) => {
   const { user } = useAuth(); 
   const isAdotante = user && user.tipo !== 'ONG';
 
-  const [isMatched, setIsMatched] = useState(false);
+  // Removido estado isMatched pois o botão foi retirado
   const [statusAtual, setStatusAtual] = useState(pet.status || "DISPONIVEL");
 
   const fotos = pet.fotosAnimais;
@@ -37,16 +37,7 @@ const CardPet = ({ pet, onDeletar, showControls }) => {
     onDeletar(pet.id);
   };
 
-  const handleMatchClick = async (e) => {
-    e.preventDefault(); e.stopPropagation(); 
-    if (isMatched) return;
-    try {
-      await PetService.registrarInteresse(pet.id);
-      setIsMatched(true);
-    } catch (err) {
-      setIsMatched(true); 
-    }
-  };
+  // Removida a função handleMatchClick pois o botão foi retirado
 
   if (isAdotante && statusAtual === 'ADOTADO') return null;
 
@@ -103,21 +94,7 @@ const CardPet = ({ pet, onDeletar, showControls }) => {
                </button>
             )}
             
-            {/* --- BOTÃO DE MATCH VOLTOU PARA BRANCO --- */}
-            {isAdotante && (
-               <button
-                 onClick={handleMatchClick}
-                 disabled={isMatched}
-                 className={`p-2 rounded-full shadow-md transition-all transform hover:scale-110 flex items-center justify-center ${
-                    isMatched 
-                    ? "bg-green-500 text-white"
-                    : "bg-white text-yellow-500 hover:bg-yellow-500 hover:text-yellow" // fundo branco
-                 }`}
-                 title={isMatched ? "Interesse Registrado" : "Tenho Interesse"}
-               >
-                 <FaHeart size={14} />
-               </button>
-            )}
+            {/* O BOTÃO DE MATCH (CORAÇÃO) FOI REMOVIDO AQUI */}
           </div>
         </div>
 
