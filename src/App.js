@@ -27,7 +27,6 @@ import AdminUploadScreen from './features/splash/components/AdminUploadScreen';
 import PetsPage from './features/pet/PetsPage';
 import PetForm from './features/pet/components/PetForm';
 import PetPage from './features/pet/[id]/PetPage';
-import EditarPerfilPage from './features/splash/components/EditarPerfilPage.js';
 import AdminRoute from './shared/components/AdminRoute';
 import MeusInteressesPage from './features/pet/adocao/MeusInteressesPage.js';
 
@@ -104,7 +103,6 @@ function App() {
                   <Route path="/ong/fila-adocao" element={<SplashScreen><FilaAdocaoPage /></SplashScreen>} />                  
                                       
                   <Route path="/adotante-home" element={<SplashScreen><AdotanteHome /></SplashScreen>} />
-                  <Route path="/editar-perfil" element={<EditarPerfilPage />} />
                   
                   {/* Rota explícita para Adotante acessar interesses direto */}
                   <Route path="/meus-interesses" element={<SplashScreen><MeusInteressesPage /></SplashScreen>} />

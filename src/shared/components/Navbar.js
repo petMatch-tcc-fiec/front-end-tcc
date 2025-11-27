@@ -139,12 +139,6 @@ const Navbar = () => {
               <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl z-20">
                 {isAuthenticated ? (
                   <>
-                    <button
-                      onClick={() => handleNavigate("/editar-perfil")}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition"
-                    >
-                      <FaUserEdit className="text-yellow-500" /> Editar Perfil
-                    </button>
                     
                     <button
                       onClick={handleLogout}
@@ -196,12 +190,6 @@ const Navbar = () => {
                 <span className="flex items-center gap-2 text-gray-700 px-4 py-2">
                   <FaUserCircle className="h-6 w-6" /> {welcomeMessage}
                 </span>
-                <button
-                  onClick={() => handleNavigate("/editar-perfil")}
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left transition"
-                >
-                  <FaUserEdit className="text-yellow-500" /> Editar Perfil
-                </button>
 
                 <button
                   onClick={handleLogout}
