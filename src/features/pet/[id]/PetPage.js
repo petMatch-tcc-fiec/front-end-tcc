@@ -164,7 +164,7 @@ const PetPage = () => {
                    // Sticky para acompanhar o scroll se necessário
                    <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-lg sticky top-4">
                       <div className="text-center mb-4">
-                        <h3 className="text-lg font-bold text-gray-800">Gostou do {pet.nome}?</h3>
+                        <h3 className="text-lg font-bold text-gray-800">Gostou do/a {pet.nome}?</h3>
                         <p className="text-gray-500 text-xs mt-1">Demonstre interesse para a ONG entrar em contato!</p>
                       </div>
 
