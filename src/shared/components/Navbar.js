@@ -76,45 +76,44 @@ const Navbar = () => {
     }
   };
 
-  const NavLinks = () => (
-    <>
+const NavLinks = () => (
+  <>
+    <li>
+      <button 
+        onClick={handleHomeClick} 
+        className="flex items-center gap-2 text-gray-600 hover:text-yellow-500 transition"
+      >
+        <FaHome /> Início
+      </button>
+    </li>
+    <li>
+      <button 
+        onClick={() => handleNavigate("/adotar")} 
+        className="flex items-center gap-2 text-gray-600 hover:text-yellow-500 transition"
+      >
+        <FaPaw /> Adotar
+      </button>
+    </li>
+    <li>
+      <button 
+        onClick={() => handleNavigate("/novidades")} 
+        className="flex items-center gap-2 text-gray-600 hover:text-yellow-500 transition"
+      >
+        <FaStar /> Novidades
+      </button>
+    </li>
+    {isAuthenticated && user && (user.tipo === "ONG" || user.tipo === "ADOTANTE") && (
       <li>
         <button 
-          onClick={handleHomeClick} 
+          onClick={() => handleNavigate("/eventos")} 
           className="flex items-center gap-2 text-gray-600 hover:text-yellow-500 transition"
         >
-          <FaHome /> Início
+          <FaCalendarAlt /> Eventos
         </button>
       </li>
-      <li>
-        <button 
-          onClick={() => handleNavigate("/adotar")} 
-          className="flex items-center gap-2 text-gray-600 hover:text-yellow-500 transition"
-        >
-          <FaPaw /> Adotar
-        </button>
-      </li>
-      <li>
-        <button 
-          onClick={() => handleNavigate("/novidades")} 
-          className="flex items-center gap-2 text-gray-600 hover:text-yellow-500 transition"
-        >
-          <FaStar /> Novidades
-        </button>
-      </li>
-      {isAuthenticated && user && user.tipo === "ONG" && (
-        <li>
-          <button 
-            onClick={() => handleNavigate("/eventos")} 
-            className="flex items-center gap-2 text-gray-600 hover:text-yellow-500 transition"
-          >
-            <FaCalendarAlt /> Eventos
-          </button>
-        </li>
-      )}
-    </>
-  );
-
+    )}
+  </>
+);
   return (
     <nav className="fixed top-0 left-0 w-full bg-white shadow-md z-50 md:h-20 flex items-center px-6">
       <div className="w-full max-w-7xl mx-auto flex items-center justify-between px-6 py-3 flex-wrap md:flex-nowrap">
