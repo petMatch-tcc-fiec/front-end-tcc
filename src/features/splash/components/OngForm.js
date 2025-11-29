@@ -65,12 +65,12 @@ const OngForm = () => {
     else if (!emailRegex.test(form.emailOng))
       tempErrors.emailOng = "Digite um e-mail válido que termine com '.com'";
 
-    if (!form.telefone) tempErrors.telefone = "O telefone é obrigatório!";
+    if (!form.telefone) tempErrors.telefone = "O telefone da ONG é obrigatório!";
     if (!form.cnpj) tempErrors.cnpj = "O CNPJ é obrigatório!";
     else if (!cnpj.isValid(form.cnpj)) tempErrors.cnpj = "CNPJ inválido!";
     if (!form.endereco) tempErrors.endereco = "O endereço é obrigatório!";
     if (!form.celular)
-      tempErrors.celular = "O celular da ONG é obrigatório!";
+      tempErrors.celular = "O contato da ONG é obrigatório!";
 
     const senhaRegex = /^(?=.*[A-Za-z])(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!form.senha) tempErrors.senha = "A senha é obrigatória!";
@@ -260,9 +260,9 @@ const OngForm = () => {
           {renderInput("nomeOng", "Nome")}
           {renderInput("nomeFantasiaOng", "Nome Fantasia")}
           {renderInput("razaoSocialOng", "Razão Social")}
-          {renderInput("celular", "Celular da ONG")}
+          {renderInput("celular", "Contato com a ONG (ex: Contato por email)")}
           {renderInput("emailOng", "E-mail", "email")}
-          {renderInput("telefone", "Telefone")}
+          {renderInput("telefone", "Telefone da ONG")}
           {renderInput("cnpj", "CNPJ")}
           {renderInput("endereco", "Endereço")}
 

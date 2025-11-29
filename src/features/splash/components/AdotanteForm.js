@@ -56,7 +56,7 @@ const AdotanteForm = () => {
     if (!form.emailAdotante) tempErrors.emailAdotante = "O e-mail é obrigatório!";
     else if (!emailRegex.test(form.emailAdotante))
       tempErrors.emailAdotante = "Digite um e-mail válido que termine com '.com'";
-    if (!form.celularAdotante) tempErrors.celularAdotante = "O celular é obrigatório!";
+    if (!form.celularAdotante) tempErrors.celularAdotante = "O telefone é obrigatório!";
     if (!form.enderecoAdotante) tempErrors.enderecoAdotante = "O endereço é obrigatório!";
     if (!form.descricaoOutrosAnimais)
       tempErrors.descricaoOutrosAnimais = "A descrição é obrigatória!";
@@ -244,7 +244,7 @@ const AdotanteForm = () => {
           {renderInput("nomeAdotante", "Nome")}
           {renderInput("cpfAdotante", "CPF")}
           {renderInput("enderecoAdotante", "Endereço")}
-          {renderInput("celularAdotante", "Celular")}
+          {renderInput("celularAdotante", "Telefone")}
           {renderInput("emailAdotante", "E-mail", "email")}
           {renderInput("descricaoOutrosAnimais", "Descrição sobre meus animais")}
           {renderInput("preferencia", "Preferência")}
