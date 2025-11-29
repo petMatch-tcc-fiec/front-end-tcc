@@ -18,19 +18,6 @@ const CardPet = ({ pet, onDeletar, showControls }) => {
     ? fotos[0].url 
     : pet.imagemUrl || IMAGEM_PADRAO;
 
-  // --- AÇÕES ---
-  const handleMarcarAdotado = async (e) => {
-    e.preventDefault(); e.stopPropagation();
-    if (window.confirm(`Confirmar que ${pet.nome} foi adotado?`)) {
-      try {
-        await PetService.atualizarStatus(pet.id, "ADOTADO");
-        setStatusAtual("ADOTADO");
-      } catch (err) {
-        console.error(err);
-        alert("Erro ao atualizar status.");
-      }
-    }
-  };
 
   const handleDeleteClick = (e) => {
     e.preventDefault(); e.stopPropagation(); 
@@ -81,21 +68,6 @@ const CardPet = ({ pet, onDeletar, showControls }) => {
                </span>
              </div>
           )}
-
-          {/* Botões Internos */}
-          <div className="absolute bottom-2 right-2 flex gap-2 z-20">
-            {showControls && statusAtual !== 'ADOTADO' && (
-               <button
-                 onClick={handleMarcarAdotado}
-                 className="p-1.5 bg-white text-green-600 rounded-full hover:bg-green-500 hover:text-white shadow-sm transition-all"
-                 title="Marcar como Adotado"
-               >
-                 <FaCheck size={12} />
-               </button>
-            )}
-            
-            {/* O BOTÃO DE MATCH (CORAÇÃO) FOI REMOVIDO AQUI */}
-          </div>
         </div>
 
         {/* Conteúdo (Padding Reduzido para p-4) */}

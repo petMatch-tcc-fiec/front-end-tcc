@@ -14,6 +14,15 @@ const AnimalInteresses = ({ pet }) => {
   const [error, setError] = useState(null);
   const [isExpanded, setIsExpanded] = useState(false);
 
+const formatarDataHora = (dataIso) => {
+    if (!dataIso) return 'Data N/A';
+    const dataObj = new Date(dataIso);
+    const dia = dataObj.toLocaleDateString('pt-BR');
+    const hora = dataObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    return `${dia} às ${hora}`;
+  };
+
+
   const carregarInteressados = async () => {
     if (!pet.id) return;
     setIsLoading(true);
@@ -160,9 +169,9 @@ const AnimalInteresses = ({ pet }) => {
                               {interesse.emailUsuario || "Email não disponível"}
                            </a>
                            <span className="hidden sm:block text-gray-300">•</span>
-                           <span className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-0.5 rounded">
-                              {interesse.dataDeInteresse ? new Date(interesse.dataDeInteresse).toLocaleDateString('pt-BR') : 'Data N/A'}
-                           </span>
+<span className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-0.5 rounded">
+   {formatarDataHora(interesse.dataDeInteresse)}
+</span>
                        </div>
                     </div>
                   </div>
