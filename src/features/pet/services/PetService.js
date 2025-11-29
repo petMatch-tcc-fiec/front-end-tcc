@@ -1,44 +1,39 @@
 import api from "../../../shared/utils/api";
 
-// (Comentários JSDoc da sua versão original omitidos por brevidade)
 /**
  * Payload para criar um Pet.
  * (Ajuste os campos conforme seu backend)
  * @typedef {object} CriarPetPayload
  * @property {string} nome
- * @property {string} especie (ex: "Cachorro", "Gato")
- * @property {string} porte (ex: "Pequeno", "Medio", "Grande")
+ * @property {string} especie
+ * @property {string} porte
  * @property {number} idade
  * @property {string} descricao
  * @property {string} imagemUrl
- * @property {string} idOng - (UUID) O ID da ONG.
+ * @property {string} idOng
  */
-// Define as rotas base corretas
+
 const ROTA_API = "/v1/api/animais";
-const ROTA_ADOCAO = "/v1/api/adocao"; // <-- Rota para o módulo de adoção
+const ROTA_ADOCAO = "/v1/api/adocao";
 
 const PetService = {
 
   /**
-   * Busca a lista de todos os pets.
+   * Lista todos os pets
    */
   async getPets() {
-    // (PRESERVADO - Nenhuma mudança aqui)
     try {
       const response = await api.get(ROTA_API);
 
-      // Verifica se a resposta é um objeto de página do Spring (tem a chave 'content')
       if (response.data && Array.isArray(response.data.content)) {
-        return response.data.content; // Retorna SÓ O ARRAY de pets
-      }
-      
-      // Se não for um objeto de página, mas for um array (fallback)
-      if (Array.isArray(response.data)) {
-        return response.data; // Retorna o array
+        return response.data.content;
       }
 
-      // Se for qualquer outra coisa (inesperado), retorna um array vazio
-      console.warn("A resposta da API de pets não era um array nem um objeto de página.");
+      if (Array.isArray(response.data)) {
+        return response.data;
+      }
+
+      console.warn("A resposta da API de pets não era um array nem Page.");
       return [];
 
     } catch (error) {
@@ -48,12 +43,10 @@ const PetService = {
   },
 
   /**
-   * Busca os detalhes de um único pet pelo ID.
+   * Busca pet pelo ID
    */
   async getPetById(id) {
-    // (PRESERVADO - Nenhuma mudança aqui)
     try {
-      // Rota corrigida (mapeia para @GetMapping("/{id}"))
       const response = await api.get(`${ROTA_API}/${id}`);
       return response.data;
     } catch (error) {
@@ -63,30 +56,23 @@ const PetService = {
   },
 
   /**
-   * Cria um novo pet.
-   * --- INÍCIO DAS MUDANÇAS ---
-   * @param {FormData} formData O formulário com 'dto' e 'file'.
+   * Criar pet (envia FormData)
    */
-  async criarPet(formData) { // <-- MUDANÇA 1: Recebe 'formData'
+  async criarPet(formData) {
     try {
-      // MUDANÇA 2: Envia 'formData'
-      // O Axios detecta o FormData e define o Content-Type automaticamente
-      const response = await api.post(ROTA_API, formData); 
+      const response = await api.post(ROTA_API, formData);
       return response.data;
     } catch (error) {
       console.error("Erro ao criar pet:", error.response?.data || error.message);
       throw error;
     }
   },
-  // --- FIM DAS MUDANÇAS ---
 
   /**
-   * Deleta um pet pelo ID.
+   * Deletar pet
    */
   async deletarPet(id) {
-    // (PRESERVADO - Nenhuma mudança aqui)
     try {
-      // Rota corrigida (mapeia para @DeleteMapping("/{id}"))
       await api.delete(`${ROTA_API}/${id}`);
     } catch (error) {
       console.error("Erro ao deletar pet:", error.response?.data || error.message);
@@ -95,11 +81,7 @@ const PetService = {
   },
 
   /**
-   * ✨ NOVA FUNÇÃO ADICIONADA
-   * Atualiza o status do animal (ex: "ADOTADO", "DISPONIVEL").
-   * Chama o endpoint: PATCH /v1/api/animais/{id}/status
-   * @param {string} id O UUID do animal
-   * @param {string} novoStatus O novo status
+   * Atualizar status (ex: "ADOTADO")
    */
   async atualizarStatus(id, novoStatus) {
     try {
@@ -112,18 +94,58 @@ const PetService = {
   },
 
   /**
-   * Registra o interesse (match) de um usuário em um animal.
-   * Chama o endpoint: POST /v1/api/adocao/animal/{animalId}/match
-   * @param {string} animalId O UUID do animal
+   * Registrar interesse/match
    */
   async registrarInteresse(animalId) {
-    // (PRESERVADO - Nenhuma mudança aqui)
     try {
       const response = await api.post(`${ROTA_ADOCAO}/animal/${animalId}/match`);
       return response.data;
     } catch (error) {
       console.error("Erro ao registrar interesse:", error.response?.data || error.message);
-      // Lança o erro para que o componente possa tratá-lo
+      throw error;
+    }
+  },
+
+  /**
+   * Buscar ficha médica do animal
+   * GET /v1/api/animais/{id}/ficha
+   */
+async getFichaMedica(animalId) {
+    try {
+      const response = await api.get(`${ROTA_API}/${animalId}/ficha`);
+      
+      // Se o status for 204 (No Content), significa que não tem ficha, mas deu certo.
+      if (response.status === 204) {
+        return null;
+      }
+
+      return response.data;
+    } catch (error) {
+      // Se der 404, também retornamos null (sem ficha)
+      if (error.response && error.response.status === 404) {
+        return null; 
+      }
+      console.error("Erro ao buscar ficha médica:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * Criar/Atualizar ficha médica
+   * PUT /v1/api/animais/{id}/ficha
+   */
+async saveFichaMedica(animalId, fichaData) {
+    try {
+      const payload = {
+        vacinas: fichaData.vacinas,
+        historicoSaude: fichaData.historicoSaude
+      };
+
+      // CORREÇÃO AQUI: Mudado de api.put para api.post
+      const response = await api.post(`${ROTA_API}/${animalId}/ficha`, payload);
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao salvar ficha médica:", error);
       throw error;
     }
   }

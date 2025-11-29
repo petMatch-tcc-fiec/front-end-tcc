@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { FaPaw, FaArrowRight } from 'react-icons/fa';
 import AuthImg from '../../features/splash/assets/Auth.png';
 import Frame1 from "../../features/splash/assets/Frame1.png";
+import { useAuth } from '../../shared/context/AuthContext';
 
 const Home = () => {
     const navigate = useNavigate();
+    const { user } = useAuth(); // 1. Pegamos o usuário do contexto
 
     const handleCadastroClick = () => {
-        navigate('/tipo-cadastro');
+        navigate('/login');
     };
 
     return (
@@ -107,7 +109,10 @@ const Home = () => {
                             onClick={handleCadastroClick}
                             className="group relative inline-flex items-center justify-center gap-3 px-8 py-3 font-bold text-white transition-all duration-300 bg-gray-900 rounded-full hover:bg-gray-800 hover:scale-105 shadow-lg hover:shadow-xl text-base"
                         >
-                            <span>Comece a Adotar Agora!</span>
+                                        {/* Lógica do Texto: Muda conforme autenticação */}
+                            <span>
+                                {user ? "Ir para a Página Inicial" : "Cadastre-se e Comece a Adotar Agora!"}
+                            </span>
                             <div className="bg-yellow-500 rounded-full p-1 text-black group-hover:translate-x-1 transition-transform">
                                 <FaArrowRight size={12} />
                             </div>

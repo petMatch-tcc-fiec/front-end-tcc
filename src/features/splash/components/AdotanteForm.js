@@ -246,7 +246,7 @@ const AdotanteForm = () => {
           {renderInput("enderecoAdotante", "Endereço")}
           {renderInput("celularAdotante", "Celular")}
           {renderInput("emailAdotante", "E-mail", "email")}
-          {renderInput("descricaoOutrosAnimais", "Descrição sobre outros animais")}
+          {renderInput("descricaoOutrosAnimais", "Descrição sobre meus animais")}
           {renderInput("preferencia", "Preferência")}
 
           {/* Senha */}

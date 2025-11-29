@@ -18,7 +18,7 @@ const Navbar = () => {
   const mobileMenuRef = useRef(null);   // Ref para o container do menu Mobile
   const hamburgerRef = useRef(null);    // Ref para o botão Hamburger
   
-  const welcomeMessage = user?.nomeFantasiaOng || user?.nome || "Bem-vindo(a)";
+  const welcomeMessage = user?.nomeFantasiaOng || user?.nome || "Acesse sua conta";
 
   // --- Lógica Atualizada para fechar AMBOS os menus ao clicar fora ---
   useEffect(() => {
