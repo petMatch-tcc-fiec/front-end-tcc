@@ -100,7 +100,7 @@ const AdminUploadScreen = () => {
     addLog("Iniciando injeção de dados... ");
 
     const formData = new FormData();
-    formData.append('arquivoCsv', selectedFile);
+    formData.append('inputFile', selectedFile);
 
 try {
       // [REMOVA ESTA LINHA]
@@ -108,11 +108,11 @@ try {
 
       // [ADICIONE ESTA LINHA]
       // Precisamos do seu 'publicApi' que envia o Token de Admin
-      const response = await api.post("/v1/api/admin/upload-csv", formData);
+      const response = await api.post("/v1/api/usuarios/csv", formData);
 
       addLog("...Upload concluído.");
       // Se você usa axios, a resposta de texto vem em 'response.data'
-      addLog(`Resposta do servidor: ${response.data}`);
+      addLog(`Resposta do servidor: ${JSON.stringify(response.data)}`);
       addLog("SISTEMA: Dados assimilados.");
       setStatus('SUCCESS');
 
@@ -140,6 +140,32 @@ try {
     }
   };
 
+const handleDownloadTemplate = () => {
+    // Cabeçalhos EXATOS exigidos pelo Java
+    const headers = [
+      "email", "password", "name", "accessLevel", 
+      "cpf_cnpj_admin", 
+      "cpf_adotante", "endereco_adotante", "celular_adotante", "descricao_outros_animais", "preferencia",
+      "enedereco_ong", "telefone_ong", "celular_ong", "cnpj_ong"
+    ];
+
+    // CORREÇÃO AQUI: Mudamos de 'STANDARD' para 'ADOTANTE'
+    const row1 = "joao@email.com,123456,Joao Silva,ADOTANTE,,12345678900,Rua A 123,11999999999,Gatos,Cachorro pequeno,,,,";
+    
+    // Exemplo de ONG
+    const row2 = "ong@animal.com,123456,Ong Feliz,ONG,,,,,,,Rua dos Bichos 500,1133334444,11988887777,12345678000199";
+
+    const csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + row1 + "\n" + row2;
+    
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "modelo_usuarios_correto.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    addLog("SISTEMA: Modelo CSV gerado (agora com ADOTANTE/ONG corretos).");
+  };
   return (
     // Fundo preto, fonte mono (estilo terminal)
     <div className="bg-black text-green-400 font-mono min-h-screen p-4 sm:p-8 flex items-center justify-center selection:bg-green-400 selection:text-black">
@@ -200,7 +226,16 @@ try {
               {status === 'UPLOADING' ? <FaSpinner className="animate-spin" /> : <FaSkull />}
               {status === 'UPLOADING' ? 'INJETANDO DADOS...' : 'EXECUTAR UPLOAD'}
             </button>
+
+            <button 
+  onClick={handleDownloadTemplate}
+  className="mt-4 text-xs text-green-600 hover:text-green-400 underline block mx-auto"
+>
+  [ DOWNLOAD MODELO DE DADOS .CSV ]
+</button>
           </div>
+
+          
 
           {/* Console de Log Falso */}
           <div>
