@@ -102,7 +102,7 @@ const MeusInteressesPage = () => {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10">
           <div className="text-center md:text-left w-full md:w-auto">
             <button
-                onClick={() => navigate('/home')}
+                onClick={() => navigate('/adotante-home')}
                 className="flex items-center gap-2 text-gray-500 hover:text-gray-800 transition-colors mb-2 text-sm font-bold uppercase tracking-wide cursor-pointer"
             >
                 <FaArrowLeft /> Voltar ao Início
