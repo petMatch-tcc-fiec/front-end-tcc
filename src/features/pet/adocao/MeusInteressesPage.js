@@ -110,7 +110,7 @@ const MeusInteressesPage = () => {
 
             <h1 className="text-4xl md:text-5xl font-black text-gray-800 drop-shadow-sm flex items-center gap-3">
               <FaHeart className="text-red-500" />
-              Meus Pedidos
+              Meus Interesses
             </h1>
             <p className="text-gray-600 mt-2 text-lg font-medium">
               Acompanhe o status das suas solicitações.
